@@ -1,0 +1,13 @@
+{
+  "name": "gnome-intellij-idea-search-provider",
+  "version": "1",
+  "description": "Gnome Shell Search Provider for IntelliJ IDEA projects",
+  "repository": "https://github.com/lunaryorn/gnome-intellij-idea-search-provider.git",
+  "author": "Sebastian Wiesner <sebastian@swsnr.de>",
+  "license": "Apache-2.0",
+  "private": true,
+  "devDependencies": {
+    "eslint": "^6.6.0",
+    "eslint-plugin-immutable": "^1.0.0"
+  }
+}

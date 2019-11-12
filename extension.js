@@ -17,14 +17,17 @@
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
+// eslint-disable-next-line no-unused-vars
 const init = () => {
     log(`initializing ${Me.metadata.name} version ${Me.metadata.version}`);
 };
 
+// eslint-disable-next-line no-unused-vars
 const enable = () => {
     log(`enabling ${Me.metadata.name} version ${Me.metadata.version}`);
 }
 
+// eslint-disable-next-line no-unused-vars
 const disable = () => {
     log(`disabling ${Me.metadata.name} version ${Me.metadata.version}`);
 }
