@@ -14,20 +14,90 @@
 
 'use strict';
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+const Gio = imports.gi.Gio;
+const St = imports.gi.St;
 
 // eslint-disable-next-line no-unused-vars
-const init = () => {
-    log(`initializing ${Me.metadata.name} version ${Me.metadata.version}`);
-};
+function init() { }
+
+const findIDEA = () => {
+    return Gio.DesktopAppInfo.new('intellij-idea-ultimate_intellij-idea-ultimate.desktop')
+}
+
+class IDEAProvider {
+    constructor() {
+        this.appInfo = findIDEA();
+    }
+
+    getInitialResultSet(terms, callback) {
+        callback(['foo']);
+    }
+
+    getSubsearchResultSet(currentResults, terms, callback) {
+        callback(['foo']);
+    }
+
+    getResultMetas(identifiers, callback) {
+        callback([{
+            id: 'foo',
+            name: 'Foo',
+            description: 'Testing',
+            createIcon: (size) => new St.Icon({
+                gicon: this.appInfo.get_icon(),
+                icon_size: size,
+            }),
+        }]);
+    }
+
+    activateResult(identifier) {
+        log(`Activating ${identifier}`);
+        this.launchIDEA(['/home/wiesner/gsoc/enmap/masterprocessor']);
+    }
+
+    launchSearch(terms) {
+        this.launchIDEA();
+    }
+
+    launchIDEA(files) {
+        try {
+            this.appInfo.launch(files || [], null);
+        } catch (err) {
+            imports.ui.main.notifyError('Failed to launch IntelliJ IDEA', err.message);
+        }
+    }
+
+    /**
+     * This method is an undocumented requirement by GNOME Shell.
+     */
+    filterResults(results, max) {
+        return results.slice(0, max);
+    }
+}
+
+const currentExtension = () => {
+    return imports.misc.extensionUtils.getCurrentExtension();
+}
+
+let registeredProvider = null;
 
 // eslint-disable-next-line no-unused-vars
-const enable = () => {
-    log(`enabling ${Me.metadata.name} version ${Me.metadata.version}`);
+function enable() {
+    if (!registeredProvider) {
+        const me = currentExtension();
+        log(`enabling ${me.metadata.name} version ${me.metadata.version}`);
+        registeredProvider = new IDEAProvider();
+        const main = imports.ui.main;
+        main.overview.viewSelector._searchResults._registerProvider(registeredProvider)
+    }
 }
 
 // eslint-disable-next-line no-unused-vars
-const disable = () => {
-    log(`disabling ${Me.metadata.name} version ${Me.metadata.version}`);
+function disable() {
+    if (registeredProvider) {
+        const me = currentExtension();
+        log(`disabling ${me.metadata.name} version ${me.metadata.version}`);
+        const main = imports.ui.main;
+        main.overview.viewSelector._searchResults._unregisterProvider(registeredProvider);
+        registeredProvider = null;
+    }
 }
