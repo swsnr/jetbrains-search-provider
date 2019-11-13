@@ -46,8 +46,10 @@ def get_project(directory):
     except FileNotFoundError:
         name = directory.name
     return {
-        # Conveniently use the absolute path as ID, because it's definitely unique
-        'id': str(directory.expanduser()),
+        # Conveniently use the absolute path as ID, because it's definitely unique,
+        # and prefix it with the name of this launch to avoid conflicts with IDs
+        # from other providers.
+        'id': 'intellij-idea-search-provider-{0}'.format(directory.expanduser()),
         'name': name,
         'path': str(directory),
         'abspath': str(directory.expanduser())
