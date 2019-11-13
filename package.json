@@ -8,5 +8,8 @@
   "private": true,
   "devDependencies": {
     "eslint": "^6.6.0"
+  },
+  "scripts": {
+    "pack": "gnome-extensions pack --extra-source find-projects.py"
   }
 }
