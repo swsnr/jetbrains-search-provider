@@ -32,6 +32,17 @@ $ gnome-extensions install intellij-idea-search-provider@swsnr.de.shell-extensio
 [GH-2]: https://github.com/lunaryorn/gnome-intellij-idea-search-provider/issues/2
 [GH-3]: https://github.com/lunaryorn/gnome-intellij-idea-search-provider/issues/3
 
+## Credits
+
+I'd like to thank [gnome-shell-web-search-provider][1] and [vscode-search-provider][2]
+for inspiration and their source code which demonstrates how to use the—apparently
+entirely internal and undocumented—Gnome shell API for search providers.
+
+Stand on the shoulders of giants and you can even write Javascript for Gnome.
+
+[1]: https://github.com/mrakow/gnome-shell-web-search-provider
+[2]: https://github.com/jomik/vscode-search-provider
+
 ## License
 
 Copyright 2019 Sebastian Wiesner <sebastian@swsnr.de>
