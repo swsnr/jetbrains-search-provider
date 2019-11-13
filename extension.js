@@ -133,15 +133,12 @@ class IDEAProvider {
      * Check all projects identified by the IDs in `currentResults` against
      * `terms`, and report resulting IDs through `callback`.
      *
-     * @param {[string]} currentResults A list of IDs of currently matched projects
+     * @param {[string]} currentResultIDs A list of IDs of currently matched projects
      * @param {[string]} terms A list of search terms
      * @param {*} callback
      */
-    getSubsearchResultSet(currentResults, terms, callback) {
-        callback(findMatchingIds(
-            currentResults.map((id) => this.projects[id]),
-            terms
-        ));
+    getSubsearchResultSet(currentResultIDs, terms, callback) {
+        callback(findMatchingIds(this.getProjects(currentResultIDs), terms));
     }
 
     /**
@@ -151,19 +148,20 @@ class IDEAProvider {
      * @param {*} callback
      */
     getResultMetas(identifiers, callback) {
-        callback(identifiers.map((id) => ({
-            // The ID of the project as given
-            id,
-            // The project name
-            name: this.projects[id].name,
-            // Use the human-readable path as description
-            description: this.projects[id].path,
-            // Use the IDEA icon for each search result
-            createIcon: (size) => new St.Icon({
-                gicon: this.appInfo.get_icon(),
-                icon_size: size,
-            }),
-        })));
+        callback(this.getProjects(identifiers)
+            .map((project) => ({
+                // The ID of the project as given
+                id: project.id,
+                // The project name
+                name: project.name,
+                // Use the human-readable path as description
+                description: project.path,
+                // Use the IDEA icon for each search result
+                createIcon: (size) => new St.Icon({
+                    gicon: this.appInfo.get_icon(),
+                    icon_size: size,
+                }),
+            })));
     }
 
     /**
@@ -172,7 +170,10 @@ class IDEAProvider {
      * Launches IDEA with the project denoted by the given identifier.
      */
     activateResult(identifier) {
-        this.launchIDEA([Gio.File.new_for_path(this.projects[identifier].abspath)]);
+        const project = this.getProject(identifier);
+        if (project) {
+            this.launchIDEA([Gio.File.new_for_path(project.abspath)]);
+        }
     }
 
     /**
@@ -193,6 +194,15 @@ class IDEAProvider {
     }
 
     /**
+     * This method is an undocumented requirement by GNOME Shell.
+     */
+    filterResults(results, max) {
+        return results.slice(0, max);
+    }
+
+    // Private methods
+
+    /**
      * Launch IDEA with the given files.
      *
      * Catch all errors that occur and display a notification dialog for errors.
@@ -208,10 +218,26 @@ class IDEAProvider {
     }
 
     /**
-     * This method is an undocumented requirement by GNOME Shell.
+     * Get all projects with the given identifiers.
+     *
+     * Ignore unknown identifiers.
+     *
+     * @param {[string]} identifiers
      */
-    filterResults(results, max) {
-        return results.slice(0, max);
+    getProjects(identifiers) {
+        return identifiers
+            .filter((id) => Object.prototype.hasOwnProperty.call(this.projects, id))
+            .map((id) => this.projects[id]);
+    }
+
+    /**
+     * Get the project with the given ID or null.
+     *
+     * @param {string} identifier
+     */
+    getProject(identifier) {
+        return Object.prototype.hasOwnProperty.call(this.projects, identifier) ?
+            this.projects[identifier] : null;
     }
 }
 
