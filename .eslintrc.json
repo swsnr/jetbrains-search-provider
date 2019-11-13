@@ -3,9 +3,6 @@
         "browser": true,
         "es6": true
     },
-    "plugins": [
-        "immutable"
-    ],
     "extends": "eslint:recommended",
     "globals": {
         "Atomics": "readonly",
@@ -20,10 +17,5 @@
     },
     "parserOptions": {
         "ecmaVersion": 2017
-    },
-    "rules": {
-        "immutable/no-let": 2,
-        "immutable/no-this": 2,
-        "immutable/no-mutation": 2
     }
 }

@@ -7,7 +7,6 @@
   "license": "Apache-2.0",
   "private": true,
   "devDependencies": {
-    "eslint": "^6.6.0",
-    "eslint-plugin-immutable": "^1.0.0"
+    "eslint": "^6.6.0"
   }
 }
