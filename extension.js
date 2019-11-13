@@ -57,21 +57,45 @@ async function execCommand(argv) {
     }
 }
 
-// eslint-disable-next-line no-unused-vars
-function init() { }
-
+/**
+ * Find the IDEA App.
+ *
+ * Currently only supports IDEA Ultimate installed from Snap Store.
+ */
 const findIDEA = () => {
     return Gio.DesktopAppInfo.new('intellij-idea-ultimate_intellij-idea-ultimate.desktop')
 }
 
-const matches = (project, terms) =>
+/**
+ * Whether the project matches all terms.
+ *
+ * Check whether the project matches all terms, by checking each term against
+ * the project name and the readable project path.
+ *
+ * @param {Project} project A project
+ * @param {[string]} terms A list of search terms
+ * @returns true if the project matches, false otherwise.
+ */
+const projectMatchesAllTerms = (project, terms) =>
     terms.every((term) => project.name.includes(term) || project.path.includes(term));
 
+/**
+ * Find all projects from the given list of projects which match the terms.
+ *
+ * @param {[Project]} projects A list of project
+ * @param {[string]} terms A list of search terms
+ * @returns A list of IDs of all projects out of `projects` which match `terms`.
+ */
 const findMatchingIds = (projects, terms) => projects
-    .filter((p) => matches(p, terms))
+    .filter((p) => projectMatchesAllTerms(p, terms))
     .map((p) => p.id);
 
 class IDEAProvider {
+    /**
+     * Create a new IDEA search provider.
+     *
+     * @param {string} path The extension path
+     */
     constructor(path) {
         this.appInfo = findIDEA();
         this.projects = null;
@@ -90,10 +114,29 @@ class IDEAProvider {
         );
     }
 
+    /**
+     * Get the initial results.
+     *
+     * Check all projects against the given terms, and report the results through
+     * `callback`.
+     *
+     * @param {[string]} terms A list of terms
+     * @param {*} callback
+     */
     getInitialResultSet(terms, callback) {
         callback(findMatchingIds(Object.values(this.projects), terms));
     }
 
+    /**
+     * Narrow down an existing result with the given `terms`.
+     *
+     * Check all projects identified by the IDs in `currentResults` against
+     * `terms`, and report resulting IDs through `callback`.
+     *
+     * @param {[string]} currentResults A list of IDs of currently matched projects
+     * @param {[string]} terms A list of search terms
+     * @param {*} callback
+     */
     getSubsearchResultSet(currentResults, terms, callback) {
         callback(findMatchingIds(
             currentResults.map((id) => this.projects[id]),
@@ -101,11 +144,21 @@ class IDEAProvider {
         ));
     }
 
+    /**
+     * Get meta information for all given results.
+     *
+     * @param {[string]} identifiers A list of matching project IDs
+     * @param {*} callback
+     */
     getResultMetas(identifiers, callback) {
         callback(identifiers.map((id) => ({
+            // The ID of the project as given
             id,
+            // The project name
             name: this.projects[id].name,
+            // Use the human-readable path as description
             description: this.projects[id].path,
+            // Use the IDEA icon for each search result
             createIcon: (size) => new St.Icon({
                 gicon: this.appInfo.get_icon(),
                 icon_size: size,
@@ -125,12 +178,27 @@ class IDEAProvider {
     /**
      * Click on the provider icon.
      *
-     * Launches IDEA.
+     * This function receives a list of terms like `getInitialResultSet`; the
+     * IDEA is to launch the underlying application and continue searching in
+     * the application using the given terms.
+     *
+     * However IDEA doesn't let us open a search dialog for recent projects from
+     * the outside, let alone specify search terms, so we just launch IDEA
+     * without any further arguments (just like the desktop launcher would do).
+     *
+     * Not exactly useful, but better than nothing.
      */
     launchSearch() {
         this.launchIDEA();
     }
 
+    /**
+     * Launch IDEA with the given files.
+     *
+     * Catch all errors that occur and display a notification dialog for errors.
+     *
+     * @param {[Gio.File]} files
+     */
     launchIDEA(files) {
         try {
             this.appInfo.launch(files || [], null);
@@ -147,12 +215,33 @@ class IDEAProvider {
     }
 }
 
+/**
+ * Get the current extension.
+ */
 const currentExtension = () => {
     return imports.misc.extensionUtils.getCurrentExtension();
 }
 
+/**
+ * The registered provider if any.
+ *
+ * Only used for correctly deregistering, and to prevent registering it twice.
+ */
 let registeredProvider = null;
 
+/**
+ * Initialize this extension immediately after loading.
+ *
+ * Doesn't do anything for this extension.
+ */
+// eslint-disable-next-line no-unused-vars
+function init() { }
+
+/**
+ * Enable this extension.
+ *
+ * Registers the search provider if not already registered.
+ */
 // eslint-disable-next-line no-unused-vars
 function enable() {
     if (!registeredProvider) {
@@ -164,6 +253,11 @@ function enable() {
     }
 }
 
+/**
+ * Disable this extension.
+ *
+ * Unregisters the search provider if registered.
+ */
 // eslint-disable-next-line no-unused-vars
 function disable() {
     if (registeredProvider) {

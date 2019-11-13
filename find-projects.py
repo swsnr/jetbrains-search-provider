@@ -19,7 +19,10 @@ import json
 from pathlib import Path
 
 
-def latest_config_file():
+def find_latest_recent_projects_file():
+    """
+    Find the `recentProjects.xml` file of the most recent IDEA version.
+    """
     candidates = sorted(
         Path.home().glob('.IntelliJIdea*'),
         key=lambda p: p.name,
@@ -30,7 +33,13 @@ def latest_config_file():
         return None
 
 
-def read_project(directory):
+def get_project(directory):
+    """
+    Get the project in the given directory.
+
+    Figure out the project name, and return a dictionary with the project name,
+    the readable project path, the absolute project path, and a unique ID.
+    """
     namefile = directory.expanduser() / '.idea' / '.name'
     try:
         name = namefile.read_text(encoding='utf-8').strip()
@@ -45,18 +54,21 @@ def read_project(directory):
     }
 
 
-def read_projects(file):
-    document = etree.parse(file)
+def find_recent_projects(recent_projects_file):
+    """
+    Find all recent projects listed in the given recent projects XML file.
+    """
+    document = etree.parse(recent_projects_file)
     paths = (Path(el.attrib['value'].replace('$USER_HOME$', '~'))
              for el in
              document.findall('.//option[@name="recentPaths"]/list/option'))
-    projects = (read_project(directory) for directory in paths if
+    projects = (get_project(directory) for directory in paths if
                 directory.expanduser().is_dir())
     return dict((project['id'], project) for project in projects)
 
 
 def main():
-    print(json.dumps(read_projects(latest_config_file())))
+    print(json.dumps(find_recent_projects(find_latest_recent_projects_file())))
 
 
 if __name__ == '__main__':
