@@ -123,12 +123,13 @@ class IDEAProvider implements SearchProvider {
   private projects: ProjectMap;
   public readonly appInfo: imports.gi.Gio.DesktopAppInfo;
 
-  constructor(path: string) {
-    this.appInfo = findIDEA();
+  constructor(
+    extensionDirectory: imports.gi.Gio.File,
+    ideaApp: imports.gi.Gio.DesktopAppInfo
+  ) {
+    this.appInfo = ideaApp;
     this.projects = {};
-    const helper = Gio.File.new_for_path(path)
-      .get_child("find-projects.py")
-      .get_path();
+    const helper = extensionDirectory.get_child("find-projects.py").get_path();
     if (!helper) {
       throw new Error("Helper find-projects.py doesn't exist!");
     }
@@ -295,11 +296,19 @@ function enable() {
   if (!registeredProvider) {
     const me = currentExtension();
     log(`enabling ${me.metadata.name} version ${me.metadata.version}`);
-    registeredProvider = new IDEAProvider(me.path);
     const main = imports.ui.main;
-    (main.overview as any).viewSelector._searchResults._registerProvider(
-      registeredProvider
-    );
+    const idea = findIDEA();
+    if (idea) {
+      registeredProvider = new IDEAProvider(me.dir, idea);
+      (main.overview as any).viewSelector._searchResults._registerProvider(
+        registeredProvider
+      );
+    } else {
+      main.notifyError(
+        "IntelliJ IDEA not found",
+        "Consider reporting on https://github.com/lunaryorn/gnome-intellij-idea-search-provider/issues/2"
+      );
+    }
   }
 }
 
