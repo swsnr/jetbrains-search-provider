@@ -7,9 +7,11 @@
   "license": "Apache-2.0",
   "private": true,
   "devDependencies": {
-    "eslint": "^6.6.0"
+    "eslint": "^6.6.0",
+    "prettier": "^1.19.1"
   },
   "scripts": {
-    "pack": "gnome-extensions pack --extra-source find-projects.py"
+    "pack": "gnome-extensions pack --extra-source find-projects.py",
+    "format": "prettier *.js *.json .eslintrc.json"
   }
 }
