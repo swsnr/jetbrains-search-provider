@@ -8,11 +8,13 @@
   "private": true,
   "devDependencies": {
     "eslint": "^6.6.0",
-    "prettier": "^1.19.1"
+    "prettier": "^1.19.1",
+    "typescript": "^3.7.2"
   },
   "scripts": {
-    "pack": "gnome-extensions pack --extra-source find-projects.py",
-    "format": "prettier *.js *.json .eslintrc.json",
-    "lint": "eslint *.js"
+    "compile": "tsc",
+    "package": "gnome-extensions pack --extra-source find-projects.py",
+    "format": "prettier *.ts *.json .eslintrc.json",
+    "lint": "eslint *.ts"
   }
 }

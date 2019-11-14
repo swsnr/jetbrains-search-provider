@@ -22,10 +22,10 @@ const St = imports.gi.St;
  *
  * Taken from <https://github.com/andyholmes/andyholmes.github.io/blob/master/articles/asynchronous-programming-in-gjs.md#spawning-processes>
  */
-async function execCommand(argv) {
-  try {
+const execCommand = (argv: ReadonlyArray<string>): Promise<string> =>
+  new Promise((resolve, reject) => {
     // There is also a reusable Gio.SubprocessLauncher class available
-    let proc = new Gio.Subprocess({
+    const proc = new Gio.Subprocess({
       argv: argv,
       // There are also other types of flags for merging stdout/stderr,
       // redirecting to /dev/null or inheriting the parent's pipes
@@ -39,34 +39,55 @@ async function execCommand(argv) {
     // also be used and awaited in a Promise.
     proc.init(null);
 
-    let stdout = await new Promise((resolve, reject) => {
-      // communicate_utf8() returns a string, communicate() returns a
-      // a GLib.Bytes and there are "headless" functions available as well
-      proc.communicate_utf8_async(null, null, (proc, res) => {
-        try {
-          resolve(proc.communicate_utf8_finish(res)[1]);
-        } catch (e) {
-          reject(e);
-        }
-      });
+    // communicate_utf8() returns a string, communicate() returns a
+    // a GLib.Bytes and there are "headless" functions available as well
+    proc.communicate_utf8_async(null, null, (proc, res) => {
+      try {
+        resolve(proc.communicate_utf8_finish(res)[1]);
+      } catch (e) {
+        reject(e);
+      }
     });
-
-    return stdout;
-  } catch (e) {
-    logError(e);
-  }
-}
+  });
 
 /**
  * Find the IDEA App.
  *
  * Currently only supports IDEA Ultimate installed from Snap Store.
  */
-const findIDEA = () => {
-  return Gio.DesktopAppInfo.new(
+const findIDEA = (): imports.gi.Gio.DesktopAppInfo | null =>
+  Gio.DesktopAppInfo.new(
     "intellij-idea-ultimate_intellij-idea-ultimate.desktop"
   );
-};
+
+interface Project {
+  /**
+   * The project identifier.
+   */
+  readonly id: string;
+
+  /**
+   * The project name.
+   */
+  readonly name: string;
+
+  /**
+   * The readable path, e.g. ~ instead of /home/…
+   */
+  readonly path: string;
+
+  /**
+   * The absolute path to the project.
+   */
+  readonly abspath: string;
+}
+
+/**
+ * A map of project IDs to projects.
+ */
+interface ProjectMap {
+  readonly [key: string]: Project;
+}
 
 /**
  * Whether the project matches all terms.
@@ -78,7 +99,10 @@ const findIDEA = () => {
  * @param {[string]} terms A list of search terms
  * @returns true if the project matches, false otherwise.
  */
-const projectMatchesAllTerms = (project, terms) =>
+const projectMatchesAllTerms = (
+  project: Project,
+  terms: ReadonlyArray<string>
+): boolean =>
   terms.every(
     term => project.name.includes(term) || project.path.includes(term)
   );
@@ -90,20 +114,24 @@ const projectMatchesAllTerms = (project, terms) =>
  * @param {[string]} terms A list of search terms
  * @returns A list of IDs of all projects out of `projects` which match `terms`.
  */
-const findMatchingIds = (projects, terms) =>
-  projects.filter(p => projectMatchesAllTerms(p, terms)).map(p => p.id);
+const findMatchingIds = (
+  projects: ReadonlyArray<Project>,
+  terms: ReadonlyArray<string>
+) => projects.filter(p => projectMatchesAllTerms(p, terms)).map(p => p.id);
 
-class IDEAProvider {
-  /**
-   * Create a new IDEA search provider.
-   *
-   * @param {string} path The extension path
-   */
-  constructor(path) {
+class IDEAProvider implements SearchProvider {
+  private projects: ProjectMap;
+  public readonly appInfo: imports.gi.Gio.DesktopAppInfo;
+
+  constructor(path: string) {
     this.appInfo = findIDEA();
-    this.projects = null;
-    const directory = Gio.File.new_for_path(path);
-    const helper = directory.get_child("find-projects.py").get_path();
+    this.projects = {};
+    const helper = Gio.File.new_for_path(path)
+      .get_child("find-projects.py")
+      .get_path();
+    if (!helper) {
+      throw new Error("Helper find-projects.py doesn't exist!");
+    }
     log(`Running Python helper ${helper} to discover IntelliJ IDEA projects`);
     execCommand(["python3", helper]).then(
       output => {
@@ -118,40 +146,25 @@ class IDEAProvider {
     );
   }
 
-  /**
-   * Get the initial results.
-   *
-   * Check all projects against the given terms, and report the results through
-   * `callback`.
-   *
-   * @param {[string]} terms A list of terms
-   * @param {*} callback
-   */
-  getInitialResultSet(terms, callback) {
+  getInitialResultSet(
+    terms: ReadonlyArray<string>,
+    callback: (ids: string[]) => void
+  ) {
     callback(findMatchingIds(Object.values(this.projects), terms));
   }
 
-  /**
-   * Narrow down an existing result with the given `terms`.
-   *
-   * Check all projects identified by the IDs in `currentResults` against
-   * `terms`, and report resulting IDs through `callback`.
-   *
-   * @param {[string]} currentResultIDs A list of IDs of currently matched projects
-   * @param {[string]} terms A list of search terms
-   * @param {*} callback
-   */
-  getSubsearchResultSet(currentResultIDs, terms, callback) {
+  getSubsearchResultSet(
+    currentResultIDs: ReadonlyArray<string>,
+    terms: string[],
+    callback: (ids: string[]) => void
+  ) {
     callback(findMatchingIds(this.getProjects(currentResultIDs), terms));
   }
 
-  /**
-   * Get meta information for all given results.
-   *
-   * @param {[string]} identifiers A list of matching project IDs
-   * @param {*} callback
-   */
-  getResultMetas(identifiers, callback) {
+  getResultMetas(
+    identifiers: ReadonlyArray<string>,
+    callback: (metas: ResultMeta[]) => void
+  ) {
     callback(
       this.getProjects(identifiers).map(project => ({
         // The ID of the project as given
@@ -161,21 +174,22 @@ class IDEAProvider {
         // Use the human-readable path as description
         description: project.path,
         // Use the IDEA icon for each search result
-        createIcon: size =>
-          new St.Icon({
-            gicon: this.appInfo.get_icon(),
-            icon_size: size
-          })
+        createIcon: size => {
+          const gicon = this.appInfo.get_icon();
+          if (gicon) {
+            return new St.Icon({
+              gicon,
+              icon_size: size
+            });
+          } else {
+            return undefined;
+          }
+        }
       }))
     );
   }
 
-  /**
-   * Click on a single result.
-   *
-   * Launches IDEA with the project denoted by the given identifier.
-   */
-  activateResult(identifier) {
+  activateResult(identifier: string) {
     const project = this.getProject(identifier);
     if (project) {
       this.launchIDEA([Gio.File.new_for_path(project.abspath)]);
@@ -202,20 +216,18 @@ class IDEAProvider {
   /**
    * This method is an undocumented requirement by GNOME Shell.
    */
-  filterResults(results, max) {
+  filterResults(results: ReadonlyArray<string>, max: number) {
     return results.slice(0, max);
   }
-
-  // Private methods
 
   /**
    * Launch IDEA with the given files.
    *
    * Catch all errors that occur and display a notification dialog for errors.
    *
-   * @param {[Gio.File]} files
+   * @param files
    */
-  launchIDEA(files) {
+  private launchIDEA(files?: imports.gi.Gio.File[]) {
     try {
       this.appInfo.launch(files || [], null);
     } catch (err) {
@@ -230,10 +242,8 @@ class IDEAProvider {
    * Get all projects with the given identifiers.
    *
    * Ignore unknown identifiers.
-   *
-   * @param {[string]} identifiers
    */
-  getProjects(identifiers) {
+  private getProjects(identifiers: ReadonlyArray<string>) {
     return identifiers
       .filter(id => Object.prototype.hasOwnProperty.call(this.projects, id))
       .map(id => this.projects[id]);
@@ -242,9 +252,9 @@ class IDEAProvider {
   /**
    * Get the project with the given ID or null.
    *
-   * @param {string} identifier
+   * @param identifier
    */
-  getProject(identifier) {
+  private getProject(identifier: string) {
     return Object.prototype.hasOwnProperty.call(this.projects, identifier)
       ? this.projects[identifier]
       : null;
@@ -254,8 +264,12 @@ class IDEAProvider {
 /**
  * Get the current extension.
  */
-const currentExtension = () => {
-  return imports.misc.extensionUtils.getCurrentExtension();
+const currentExtension = (): ExtensionObject => {
+  const ext = imports.misc.extensionUtils.getCurrentExtension();
+  if (!ext) {
+    throw new Error("Can't figure out current extension");
+  }
+  return ext;
 };
 
 /**
@@ -263,14 +277,13 @@ const currentExtension = () => {
  *
  * Only used for correctly deregistering, and to prevent registering it twice.
  */
-let registeredProvider = null;
+let registeredProvider: IDEAProvider | null = null;
 
 /**
  * Initialize this extension immediately after loading.
  *
  * Doesn't do anything for this extension.
  */
-// eslint-disable-next-line no-unused-vars
 function init() {}
 
 /**
@@ -278,14 +291,13 @@ function init() {}
  *
  * Registers the search provider if not already registered.
  */
-// eslint-disable-next-line no-unused-vars
 function enable() {
   if (!registeredProvider) {
     const me = currentExtension();
     log(`enabling ${me.metadata.name} version ${me.metadata.version}`);
     registeredProvider = new IDEAProvider(me.path);
     const main = imports.ui.main;
-    main.overview.viewSelector._searchResults._registerProvider(
+    (main.overview as any).viewSelector._searchResults._registerProvider(
       registeredProvider
     );
   }
@@ -296,13 +308,12 @@ function enable() {
  *
  * Unregisters the search provider if registered.
  */
-// eslint-disable-next-line no-unused-vars
 function disable() {
   if (registeredProvider) {
     const me = currentExtension();
     log(`disabling ${me.metadata.name} version ${me.metadata.version}`);
     const main = imports.ui.main;
-    main.overview.viewSelector._searchResults._unregisterProvider(
+    (main.overview as any).viewSelector._searchResults._unregisterProvider(
       registeredProvider
     );
     registeredProvider = null;

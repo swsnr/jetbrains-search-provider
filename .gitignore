@@ -1,2 +1,8 @@
+# Node libraries
 /node_modules/
+
+# Compiled extension files
+/*.js
+
+# The packed shell extension
 *.shell-extension.zip
