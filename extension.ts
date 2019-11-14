@@ -117,7 +117,8 @@ const projectMatchesAllTerms = (
 const findMatchingIds = (
   projects: ReadonlyArray<Project>,
   terms: ReadonlyArray<string>
-) => projects.filter(p => projectMatchesAllTerms(p, terms)).map(p => p.id);
+): string[] =>
+  projects.filter(p => projectMatchesAllTerms(p, terms)).map(p => p.id);
 
 class IDEAProvider implements SearchProvider {
   private projects: ProjectMap;
@@ -150,7 +151,7 @@ class IDEAProvider implements SearchProvider {
   getInitialResultSet(
     terms: ReadonlyArray<string>,
     callback: (ids: string[]) => void
-  ) {
+  ): void {
     callback(findMatchingIds(Object.values(this.projects), terms));
   }
 
@@ -158,14 +159,14 @@ class IDEAProvider implements SearchProvider {
     currentResultIDs: ReadonlyArray<string>,
     terms: string[],
     callback: (ids: string[]) => void
-  ) {
+  ): void {
     callback(findMatchingIds(this.getProjects(currentResultIDs), terms));
   }
 
   getResultMetas(
     identifiers: ReadonlyArray<string>,
     callback: (metas: ResultMeta[]) => void
-  ) {
+  ): void {
     callback(
       this.getProjects(identifiers).map(project => ({
         // The ID of the project as given
@@ -175,11 +176,12 @@ class IDEAProvider implements SearchProvider {
         // Use the human-readable path as description
         description: project.path,
         // Use the IDEA icon for each search result
-        createIcon: size => {
+        createIcon: (size): imports.gi.St.Icon | undefined => {
           const gicon = this.appInfo.get_icon();
           if (gicon) {
             return new St.Icon({
               gicon,
+              // eslint-disable-next-line @typescript-eslint/camelcase
               icon_size: size
             });
           } else {
@@ -190,7 +192,7 @@ class IDEAProvider implements SearchProvider {
     );
   }
 
-  activateResult(identifier: string) {
+  activateResult(identifier: string): void {
     const project = this.getProject(identifier);
     if (project) {
       this.launchIDEA([Gio.File.new_for_path(project.abspath)]);
@@ -210,14 +212,14 @@ class IDEAProvider implements SearchProvider {
    *
    * Not exactly useful, but better than nothing.
    */
-  launchSearch() {
+  launchSearch(): void {
     this.launchIDEA();
   }
 
   /**
    * This method is an undocumented requirement by GNOME Shell.
    */
-  filterResults(results: ReadonlyArray<string>, max: number) {
+  filterResults(results: ReadonlyArray<string>, max: number): string[] {
     return results.slice(0, max);
   }
 
@@ -228,7 +230,7 @@ class IDEAProvider implements SearchProvider {
    *
    * @param files
    */
-  private launchIDEA(files?: imports.gi.Gio.File[]) {
+  private launchIDEA(files?: imports.gi.Gio.File[]): void {
     try {
       this.appInfo.launch(files || [], null);
     } catch (err) {
@@ -244,7 +246,7 @@ class IDEAProvider implements SearchProvider {
    *
    * Ignore unknown identifiers.
    */
-  private getProjects(identifiers: ReadonlyArray<string>) {
+  private getProjects(identifiers: ReadonlyArray<string>): Project[] {
     return identifiers
       .filter(id => Object.prototype.hasOwnProperty.call(this.projects, id))
       .map(id => this.projects[id]);
@@ -255,7 +257,7 @@ class IDEAProvider implements SearchProvider {
    *
    * @param identifier
    */
-  private getProject(identifier: string) {
+  private getProject(identifier: string): Project | null {
     return Object.prototype.hasOwnProperty.call(this.projects, identifier)
       ? this.projects[identifier]
       : null;
@@ -285,14 +287,16 @@ let registeredProvider: IDEAProvider | null = null;
  *
  * Doesn't do anything for this extension.
  */
-function init() {}
+// eslint-disable-next-line @typescript-eslint/no-empty-function,@typescript-eslint/no-unused-vars
+function init(): void {}
 
 /**
  * Enable this extension.
  *
  * Registers the search provider if not already registered.
  */
-function enable() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function enable(): void {
   if (!registeredProvider) {
     const me = currentExtension();
     log(`enabling ${me.metadata.name} version ${me.metadata.version}`);
@@ -317,7 +321,8 @@ function enable() {
  *
  * Unregisters the search provider if registered.
  */
-function disable() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function disable(): void {
   if (registeredProvider) {
     const me = currentExtension();
     log(`disabling ${me.metadata.name} version ${me.metadata.version}`);

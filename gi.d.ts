@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/* eslint-disable @typescript-eslint/camelcase */
+
 declare namespace imports {
   namespace gi {
     namespace Gio {
@@ -58,7 +60,7 @@ declare namespace imports {
       /**
        * https://gjs-docs.gnome.org/gio20~2.0_api/gio.subprocess
        */
-      class Subprocess {
+      export class Subprocess {
         constructor(args: {
           argv: ReadonlyArray<string>;
           flags: SubprocessFlags;
@@ -123,7 +125,7 @@ declare namespace imports {
       /**
        * https://gjs-docs.gnome.org/gio20~2.0_api/gio.desktopappinfo
        */
-      class DesktopAppInfo extends AppInfo {
+      export class DesktopAppInfo extends AppInfo {
         /**
          * https://gjs-docs.gnome.org/gio20~2.0_api/gio.desktopappinfo#constructor-new
          */
@@ -135,7 +137,7 @@ declare namespace imports {
      * Shell toolkit.
      */
     namespace St {
-      class Icon {
+      export class Icon {
         constructor(props: { gicon: Gio.Icon; icon_size: number });
       }
     }

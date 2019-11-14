@@ -125,7 +125,7 @@ declare interface ExtensionObject {
 declare namespace imports {
   namespace ui {
     namespace overview {
-      class Overview {
+      export class Overview {
         addSearchProvider(provider: SearchProvider): void;
 
         removeSearchProvider(provider: SearchProvider): void;
