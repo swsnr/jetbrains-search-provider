@@ -1,6 +1,6 @@
 {
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
+  "plugins": ["@typescript-eslint", "immutable"],
   "env": {
     "browser": true,
     "es6": true
@@ -23,5 +23,10 @@
   },
   "parserOptions": {
     "ecmaVersion": 2017
+  },
+  "rules": {
+    "immutable/no-let": "error",
+    "immutable/no-this": "error",
+    "immutable/no-mutation": "error"
   }
 }
