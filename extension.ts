@@ -305,8 +305,7 @@ function enable(): void {
             // If the user hasn't disabled the extension meanwhile create the
             // search provider and registered it, both in our global variable
             // and for gnome shell.
-            const provider = createProvider(projects, idea);
-            registeredProvider = provider;
+            registeredProvider = createProvider(projects, idea);
             main.overview.viewSelector._searchResults._registerProvider(
               registeredProvider
             );
