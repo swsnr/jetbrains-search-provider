@@ -129,18 +129,17 @@ declare interface ExtensionObject {
 
 declare namespace imports {
   namespace ui {
-    namespace overview {
-      export class Overview {
-        addSearchProvider(provider: SearchProvider): void;
-
-        removeSearchProvider(provider: SearchProvider): void;
-      }
-    }
-
     namespace main {
       function notifyError(msg: string, details: string): void;
 
-      const overview: imports.ui.overview.Overview;
+      namespace overview {
+        namespace viewSelector {
+          namespace _searchResults {
+            function _registerProvider(provider: SearchProvider): void;
+            function _unregisterProvider(provider: SearchProvider): void;
+          }
+        }
+      }
     }
   }
 

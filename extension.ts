@@ -295,7 +295,7 @@ function enable(): void {
             // and for gnome shell.
             const provider = createProvider(projects, idea);
             registeredProvider = provider;
-            (main.overview as any).viewSelector._searchResults._registerProvider(
+            main.overview.viewSelector._searchResults._registerProvider(
               registeredProvider
             );
           }
@@ -329,7 +329,7 @@ function disable(): void {
     const me = currentExtension();
     log(`disabling ${me.metadata.name} version ${me.metadata.version}`);
     const main = imports.ui.main;
-    (main.overview as any).viewSelector._searchResults._unregisterProvider(
+    main.overview.viewSelector._searchResults._unregisterProvider(
       registeredProvider
     );
   }
