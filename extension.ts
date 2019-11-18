@@ -177,7 +177,7 @@ const resultMetaForProject = (idea: imports.gi.Gio.DesktopAppInfo) => (
   id: project.id,
   name: project.name,
   description: project.path,
-  createIcon: (size): imports.gi.St.Icon | undefined => {
+  createIcon: (size): imports.gi.St.Icon | null => {
     const gicon = idea.get_icon();
     if (gicon) {
       return new St.Icon({
@@ -186,7 +186,7 @@ const resultMetaForProject = (idea: imports.gi.Gio.DesktopAppInfo) => (
         icon_size: size
       });
     } else {
-      return undefined;
+      return null;
     }
   }
 });
@@ -209,6 +209,7 @@ const createProvider = (
   projects: ProjectMap,
   idea: imports.gi.Gio.DesktopAppInfo
 ): SearchProvider => ({
+  appInfo: idea,
   getInitialResultSet: (terms, callback): void =>
     callback(findMatchingIds(Object.values(projects), terms)),
   getSubsearchResultSet: (current, terms, callback): void =>

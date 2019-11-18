@@ -30,13 +30,18 @@ declare interface ResultMeta {
   /**
    * Create an icon for the given size.
    */
-  readonly createIcon: (size: number) => imports.gi.St.Icon | undefined;
+  readonly createIcon: (size: number) => imports.gi.St.Icon | null;
 }
 
 /**
  * A search provider.
  */
 declare interface SearchProvider {
+  /**
+   * The App providing these search results.
+   */
+  readonly appInfo: imports.gi.Gio.AppInfo;
+
   /**
    * Get the initial results.
    *
