@@ -45,6 +45,7 @@ def get_project(directory):
         name = namefile.read_text(encoding='utf-8').strip()
     except FileNotFoundError:
         name = directory.name
+    # When changing this object change the `Project` interface in extension.ts
     return {
         # Conveniently use the absolute path as ID, because it's definitely unique,
         # and prefix it with the name of this launch to avoid conflicts with IDs
