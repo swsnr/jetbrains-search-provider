@@ -15,6 +15,17 @@
 const Gio = imports.gi.Gio;
 const St = imports.gi.St;
 
+const Main = imports.ui.main;
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const Self = imports.misc.extensionUtils.getCurrentExtension()!;
+
+/**
+ * Log a message from this extension, with prefix.
+ *
+ * @param message The message to log
+ */
+const l = (message: string): void => log(`${Self.metadata.name}: ${message}`);
+
 /**
  * Spawn command.
  *
@@ -63,7 +74,7 @@ const findIDEA = (): imports.gi.Gio.DesktopAppInfo | null => {
   for (const desktopId of candidates) {
     const app = Gio.DesktopAppInfo.new(desktopId);
     if (app) {
-      log(`Found IntelliJ IDEA at ${desktopId}`);
+      l(`Found IntelliJ IDEA at ${desktopId}`);
       return app;
     }
   }
@@ -251,20 +262,9 @@ const recentProjects = (
   if (!helper) {
     return Promise.reject(new Error("Helper find-projects.py doesn't exist!"));
   } else {
-    log(`Running Python helper ${helper} to discover IntelliJ IDEA projects`);
+    l(`Running Python helper ${helper} to discover IntelliJ IDEA projects`);
     return execCommand(["python3", helper]).then(output => JSON.parse(output));
   }
-};
-
-/**
- * Get the current extension.
- */
-const currentExtension = (): ExtensionObject => {
-  const ext = imports.misc.extensionUtils.getCurrentExtension();
-  if (!ext) {
-    throw new Error("Can't figure out current extension");
-  }
-  return ext;
 };
 
 type RegisteredProvider = "unregistered" | "registering" | SearchProvider;
@@ -293,20 +293,18 @@ function init(): void {}
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function enable(): void {
   if (registeredProvider === "unregistered") {
-    const me = currentExtension();
-    log(`enabling ${me.metadata.name} version ${me.metadata.version}`);
-    const main = imports.ui.main;
+    l(`enabling version ${Self.metadata.version}`);
     const idea = findIDEA();
     if (idea) {
       registeredProvider = "registering";
-      recentProjects(me.dir).then(
+      recentProjects(Self.dir).then(
         projects => {
           if (registeredProvider === "registering") {
             // If the user hasn't disabled the extension meanwhile create the
             // search provider and registered it, both in our global variable
             // and for gnome shell.
             registeredProvider = createProvider(projects, idea);
-            main.overview.viewSelector._searchResults._registerProvider(
+            Main.overview.viewSelector._searchResults._registerProvider(
               registeredProvider
             );
           }
@@ -315,12 +313,12 @@ function enable(): void {
           // If the the user hasn't disabled the extension meanwhile show an
           // error message.
           if (registeredProvider === "registering") {
-            main.notifyError("Failed to find recent projects", error.message);
+            Main.notifyError("Failed to find recent projects", error.message);
           }
         }
       );
     } else {
-      main.notifyError(
+      Main.notifyError(
         "IntelliJ IDEA not found",
         "Consider reporting on https://github.com/lunaryorn/gnome-intellij-idea-search-provider/issues/2"
       );
@@ -337,10 +335,8 @@ function enable(): void {
 function disable(): void {
   if (typeof registeredProvider !== "string") {
     // Remove the provider if it was registered
-    const me = currentExtension();
-    log(`disabling ${me.metadata.name} version ${me.metadata.version}`);
-    const main = imports.ui.main;
-    main.overview.viewSelector._searchResults._unregisterProvider(
+    l(`Disabling ${Self.metadata.version}`);
+    Main.overview.viewSelector._searchResults._unregisterProvider(
       registeredProvider
     );
   }
