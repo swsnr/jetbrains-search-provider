@@ -232,6 +232,9 @@ const createProvider = (
   projects: ProjectMap,
   idea: imports.gi.Gio.DesktopAppInfo
 ): SearchProvider => ({
+  id: Self.uuid,
+  isRemoteProvider: false,
+  canLaunchSearch: true,
   appInfo: idea,
   getInitialResultSet: (terms, callback): void =>
     callback(findMatchingIds(Object.values(projects), terms)),

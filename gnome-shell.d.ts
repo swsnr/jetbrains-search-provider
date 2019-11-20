@@ -52,6 +52,25 @@ declare interface ResultMeta {
  */
 declare interface SearchProvider {
   /**
+   * The unique ID of this provider
+   */
+  readonly id: string;
+
+  /**
+   * Whether this is a "remote" provider.
+   *
+   * Should be `false` for all search provider extensions.
+   */
+  readonly isRemoteProvider: boolean;
+
+  /**
+   * Whether this provider can launch a search in the application.
+   *
+   * Set to `true` to activate the "launchSearch" function.
+   */
+  readonly canLaunchSearch: boolean;
+
+  /**
    * The App providing these search results.
    */
   readonly appInfo: imports.gi.Gio.AppInfo;
@@ -109,6 +128,8 @@ declare interface SearchProvider {
    * Continue search in the search provider app.
    *
    * Called when the user clicks on the search provider.
+   *
+   * Likely ignored if `canLaunchSearch` is `false`.
    *
    * @param terms The terms
    */
