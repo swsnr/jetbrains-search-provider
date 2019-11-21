@@ -66,6 +66,8 @@ const execCommand = (argv: ReadonlyArray<string>): Promise<string> =>
  */
 const findIDEA = (): imports.gi.Gio.DesktopAppInfo | null => {
   const candidates = [
+    // Arch Linux AUR package
+    "jetbrains-idea.desktop",
     // Snap installation
     "intellij-idea-ultimate_intellij-idea-ultimate.desktop",
     // Flatpak installation
