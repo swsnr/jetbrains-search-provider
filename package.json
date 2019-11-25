@@ -1,6 +1,6 @@
 {
   "name": "gnome-intellij-idea-search-provider",
-  "version": "3",
+  "version": "4",
   "description": "Gnome Shell Search Provider for IntelliJ IDEA projects",
   "repository": "https://github.com/lunaryorn/gnome-intellij-idea-search-provider.git",
   "author": "Sebastian Wiesner <sebastian@swsnr.de>",
