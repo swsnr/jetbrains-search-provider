@@ -29,15 +29,12 @@ installation methods, remove and reinstall.
 - I do not know how to parse XML in GJS, so finding recent IntelliJ projects
   relies on a Python helper which parses `recentProjects.xml` and outputs
   relevant parts as JSON (see [GH-1]).
-- I use Ultimate and install it with `snap`, so this extensions only supports
-  IDEA Ultimate installed with `snap`. Pull requests for Community and Toolbox
+- I use Ultimate, so this extension only supports IDEA Ultimate, installed with
+  `snap`, `flatpak` or from AUR. Pull requests for Community and Toolbox
   welcome, see [GH-2].
-- I haven't published the extension to <https://extensions.gnome.org/> and I for
-  my part don't care, but I'll do if there's interest, see [GH-3]
 
 [gh-1]: https://github.com/lunaryorn/gnome-intellij-idea-search-provider/issues/1
 [gh-2]: https://github.com/lunaryorn/gnome-intellij-idea-search-provider/issues/2
-[gh-3]: https://github.com/lunaryorn/gnome-intellij-idea-search-provider/issues/3
 
 ## Credits
 
