@@ -18,6 +18,7 @@
     "compile": "tsc",
     "package": "gnome-extensions pack --extra-source find-projects.py",
     "format": "prettier *.ts *.json .eslintrc.json",
-    "lint": "eslint *.ts"
+    "lint": "eslint *.ts",
+    "run": "dbus-run-session -- gnome-shell --nested --wayland"
   }
 }
