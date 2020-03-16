@@ -162,6 +162,12 @@ declare interface ExtensionObject {
   readonly path: string;
 }
 
+declare interface ExtensionState {
+  enable(): void;
+
+  disable(): void;
+}
+
 declare namespace imports {
   namespace ui {
     namespace main {

@@ -254,77 +254,64 @@ const recentProjects = (
 type RegisteredProvider = "unregistered" | "registering" | SearchProvider;
 
 /**
- * The registered provider if any.
- *
- * Only used for correctly deregistering, and to prevent registering it twice.
- */
-// eslint-disable-next-line immutable/no-let
-let registeredProvider: RegisteredProvider = "unregistered";
-
-/**
  * Initialize this extension immediately after loading.
  *
  * Doesn't do anything for this extension.
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-function,@typescript-eslint/no-unused-vars
-function init(): void {}
+function init(): ExtensionState {
+  // eslint-disable-next-line immutable/no-let
+  let registeredProvider: RegisteredProvider = "unregistered";
 
-/**
- * Enable this extension.
- *
- * Registers the search provider if not already registered.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function enable(): void {
-  if (registeredProvider === "unregistered") {
-    l(`enabling version ${Self.metadata.version}`);
-    const idea = findIDEA();
-    if (idea) {
-      registeredProvider = "registering";
-      recentProjects(Self.dir).then(
-        projects => {
-          if (registeredProvider === "registering") {
-            // If the user hasn't disabled the extension meanwhile create the
-            // search provider and registered it, both in our global variable
-            // and for gnome shell.
-            registeredProvider = createProvider(projects, idea);
-            Main.overview.viewSelector._searchResults._registerProvider(
-              registeredProvider
-            );
-          }
-        },
-        error => {
-          // If the the user hasn't disabled the extension meanwhile show an
-          // error message.
-          if (registeredProvider === "registering") {
-            Main.notifyError("Failed to find recent projects", error.message);
-          }
+  return {
+    enable: (): void => {
+      if (registeredProvider === "unregistered") {
+        l(`enabling version ${Self.metadata.version}`);
+        const idea = findIDEA();
+        if (idea) {
+          registeredProvider = "registering";
+          recentProjects(Self.dir).then(
+            projects => {
+              if (registeredProvider === "registering") {
+                // If the user hasn't disabled the extension meanwhile create the
+                // search provider and registered it, both in our global variable
+                // and for gnome shell.
+                registeredProvider = createProvider(projects, idea);
+                Main.overview.viewSelector._searchResults._registerProvider(
+                  registeredProvider
+                );
+              }
+            },
+            error => {
+              // If the the user hasn't disabled the extension meanwhile show an
+              // error message.
+              if (registeredProvider === "registering") {
+                Main.notifyError(
+                  "Failed to find recent projects",
+                  error.message
+                );
+              }
+            }
+          );
+        } else {
+          Main.notifyError(
+            "IntelliJ IDEA not found",
+            "Consider reporting on https://github.com/lunaryorn/gnome-intellij-idea-search-provider/issues/2"
+          );
         }
-      );
-    } else {
-      Main.notifyError(
-        "IntelliJ IDEA not found",
-        "Consider reporting on https://github.com/lunaryorn/gnome-intellij-idea-search-provider/issues/2"
-      );
+      }
+    },
+    disable: (): void => {
+      if (typeof registeredProvider !== "string") {
+        // Remove the provider if it was registered
+        l(`Disabling ${Self.metadata.version}`);
+        Main.overview.viewSelector._searchResults._unregisterProvider(
+          registeredProvider
+        );
+      }
+      // In any case mark the provider as unregistered, so that we can register it
+      // again when the user reenables the extension.
+      registeredProvider = "unregistered";
     }
-  }
-}
-
-/**
- * Disable this extension.
- *
- * Unregisters the search provider if registered.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function disable(): void {
-  if (typeof registeredProvider !== "string") {
-    // Remove the provider if it was registered
-    l(`Disabling ${Self.metadata.version}`);
-    Main.overview.viewSelector._searchResults._unregisterProvider(
-      registeredProvider
-    );
-  }
-  // In any case mark the provider as unregistered, so that we can register it
-  // again when the user reenables the extension.
-  registeredProvider = "unregistered";
+  };
 }
