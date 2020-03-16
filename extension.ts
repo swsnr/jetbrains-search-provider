@@ -216,7 +216,7 @@ const createProvider = (
   canLaunchSearch: true,
   appInfo: idea,
   getInitialResultSet: (terms, callback): void =>
-    callback(findMatchingIds(Object.values(projects), terms)),
+    callback(findMatchingIds([...projects.values()], terms)),
   getSubsearchResultSet: (current, terms, callback): void =>
     callback(findMatchingIds(lookupProjects(projects, current), terms)),
   getResultMetas: (ids, callback): void =>
