@@ -105,12 +105,7 @@ interface Project {
   readonly abspath: string;
 }
 
-/**
- * A map of project IDs to projects.
- */
-interface ProjectMap {
-  readonly [key: string]: Project;
-}
+type ProjectMap = Map<string, Project>;
 
 /**
  * Lookup projects by their identifiers.
@@ -122,25 +117,7 @@ interface ProjectMap {
 const lookupProjects = (
   projects: ProjectMap,
   identifiers: ReadonlyArray<string>
-): Project[] =>
-  identifiers
-    .filter(id => Object.prototype.hasOwnProperty.call(projects, id))
-    .map(id => projects[id]);
-
-/**
- * Lookup a single project.
- *
- * @param projects Known projects
- * @param identifier The project identifier to look for
- * @returns The project with `identifier` or `null`
- */
-const lookupProject = (
-  projects: ProjectMap,
-  identifier: string
-): Project | null =>
-  Object.prototype.hasOwnProperty.call(projects, identifier)
-    ? projects[identifier]
-    : null;
+): Project[] => identifiers.map(projects.get).filter((p): p is Project => !!p);
 
 /**
  * Whether the project matches all terms.
@@ -246,7 +223,7 @@ const createProvider = (
     callback(lookupProjects(projects, ids).map(resultMetaForProject(idea))),
   launchSearch: (): void => launchIDEAInShell(idea),
   activateResult: (id: string): void => {
-    const project = lookupProject(projects, id);
+    const project = projects.get(id);
     if (project) {
       launchIDEAInShell(idea, [Gio.File.new_for_path(project.abspath)]);
     }
@@ -268,7 +245,9 @@ const recentProjects = (
     return Promise.reject(new Error("Helper find-projects.py doesn't exist!"));
   } else {
     l(`Running Python helper ${helper} to discover IntelliJ IDEA projects`);
-    return execCommand(["python3", helper]).then(output => JSON.parse(output));
+    return execCommand(["python3", helper]).then(
+      output => new Map(Object.entries(JSON.parse(output)))
+    );
   }
 };
 
