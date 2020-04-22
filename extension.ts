@@ -120,7 +120,8 @@ type ProjectMap = Map<string, Project>;
 const lookupProjects = (
   projects: ProjectMap,
   identifiers: ReadonlyArray<string>
-): Project[] => identifiers.map(projects.get).filter((p): p is Project => !!p);
+): Project[] =>
+  identifiers.map((id) => projects.get(id)).filter((p): p is Project => !!p);
 
 /**
  * Whether the project matches all terms.
