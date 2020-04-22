@@ -14,21 +14,46 @@
 # the License.
 
 
+import os
 import xml.etree.ElementTree as etree
 import json
+import re
 from pathlib import Path
+
+
+def idea_version(config_dir):
+    version = re.search(r'\d{4}\.\d{1,2}', config_dir.name)
+    if version:
+        year, revision = version.group(0).split('.')
+        return (int(year), int(revision))
+    else:
+        raise ValueError(f'Not a valid IDEA config directory: {config_dir}')
+
+
+def find_idea_directories():
+    """
+    Find all available IDEA configuration directories together with their version.
+    """
+    config_home = os.environb.get(b'XDG_CONFIG_HOME', b'')
+    if config_home:
+        config_home = Path(config_home)
+    else:
+        config_home = Path.home() / '.config'
+    yield from (config_home / 'JetBrains').glob('IntelliJIdea*')
+    yield from Path.home().glob('.IntelliJIdea*')
 
 
 def find_latest_recent_projects_file():
     """
     Find the `recentProjects.xml` file of the most recent IDEA version.
     """
-    candidates = sorted(
-        Path.home().glob('.IntelliJIdea*'),
-        key=lambda p: p.name,
-        reverse=True)
-    if candidates:
-        return candidates[0] / 'config' / 'options' / 'recentProjects.xml'
+    config_dir = max(find_idea_directories(), key=idea_version, default=None)
+    if config_dir:
+        year, _ = idea_version(config_dir)
+        if 2020 <= year:
+            return config_dir / 'options' / 'recentProjects.xml'
+        else:
+            return config_dir / 'config' / 'options' / 'recentProjects.xml'
     else:
         return None
 
@@ -70,8 +95,27 @@ def find_recent_projects(recent_projects_file):
     return dict((project['id'], project) for project in projects)
 
 
+def success(projects):
+    return {
+        'kind': 'success',
+        'projects': projects
+    }
+
+
+def error(message):
+    return {
+        'kind': 'error',
+        'message': message
+    }
+
+
 def main():
-    print(json.dumps(find_recent_projects(find_latest_recent_projects_file())))
+    config_file = find_latest_recent_projects_file()
+    if config_file:
+        output = success(find_recent_projects(config_file))
+    else:
+        output = error('No IDEA configuration directory found')
+    print(json.dumps(output))
 
 
 if __name__ == '__main__':

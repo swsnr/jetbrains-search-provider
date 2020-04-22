@@ -83,6 +83,9 @@ const findIDEA = (): imports.gi.Gio.DesktopAppInfo | null => {
   return null;
 };
 
+/**
+ * An project.
+ */
 interface Project {
   /**
    * The project identifier.
@@ -231,25 +234,95 @@ const createProvider = (
   filterResults: (results, max): string[] => results.slice(0, max),
 });
 
+interface HelperSuccessResult {
+  readonly kind: "success";
+  /**
+   * Discovered projects
+   */
+  readonly projects: {
+    // Note: Do not use the Project type, lest we change it accidentally and
+    // thus break deserialization.
+    [key: string]: {
+      /**
+       * The project identifier.
+       */
+      readonly id: string;
+
+      /**
+       * The project name.
+       */
+      readonly name: string;
+
+      /**
+       * The readable path, e.g. ~ instead of /home/…
+       */
+      readonly path: string;
+
+      /**
+       * The absolute path to the project.
+       */
+      readonly abspath: string;
+    };
+  };
+}
+
+interface HelperErrorResult {
+  readonly kind: "error";
+
+  /**
+   * A human readable error message.
+   */
+  readonly message: string;
+}
+
 /**
- * Find all recent projects.
+ * The output of our helper;  keep in sync with what the helper really prints
+ */
+type HelperOutput = HelperSuccessResult | HelperErrorResult;
+
+/**
+ * Run the recent projects helper.
+ *
+ * @param extensionDirectory The directory of this extension
+ * @returns The output of our Python helper
+ */
+const runRecentProjectsHelper = (
+  extensionDirectory: imports.gi.Gio.File
+): Promise<HelperOutput> => {
+  const helper = extensionDirectory.get_child("find-projects.py").get_path();
+  if (!helper) {
+    return Promise.reject(new Error("Helper find-projects.py doesn't exist!"));
+  } else {
+    l(`Running Python helper ${helper} to discover IntelliJ IDEA projects`);
+    return execCommand(["python3", helper]).then(JSON.parse);
+  }
+};
+
+class RecentProjectsError extends Error {
+  constructor(message: string) {
+    super(`Failed to get recent projects: ${message}`);
+    // eslint-disable-next-line immutable/no-this, immutable/no-mutation
+    this.name = "RecentProjectsError";
+  }
+}
+
+/**
+ * Get all recent IDEA projects.
  *
  * @param extensionDirectory The directory of this extension
  * @returns A promise with all recent IDEA projects.
  */
 const recentProjects = (
   extensionDirectory: imports.gi.Gio.File
-): Promise<ProjectMap> => {
-  const helper = extensionDirectory.get_child("find-projects.py").get_path();
-  if (!helper) {
-    return Promise.reject(new Error("Helper find-projects.py doesn't exist!"));
-  } else {
-    l(`Running Python helper ${helper} to discover IntelliJ IDEA projects`);
-    return execCommand(["python3", helper]).then(
-      (output) => new Map(Object.entries(JSON.parse(output)))
-    );
-  }
-};
+): Promise<ProjectMap> =>
+  runRecentProjectsHelper(extensionDirectory).then((output) => {
+    switch (output.kind) {
+      case "error":
+        throw new RecentProjectsError(output.message);
+      case "success":
+        return new Map(Object.entries(output.projects));
+    }
+  });
 
 type RegisteredProvider = "unregistered" | "registering" | SearchProvider;
 
@@ -270,8 +343,8 @@ function init(): ExtensionState {
         const idea = findIDEA();
         if (idea) {
           registeredProvider = "registering";
-          recentProjects(Self.dir).then(
-            (projects) => {
+          recentProjects(Self.dir)
+            .then((projects) => {
               if (registeredProvider === "registering") {
                 // If the user hasn't disabled the extension meanwhile create the
                 // search provider and registered it, both in our global variable
@@ -281,8 +354,8 @@ function init(): ExtensionState {
                   registeredProvider
                 );
               }
-            },
-            (error) => {
+            })
+            .catch((error) => {
               // If the the user hasn't disabled the extension meanwhile show an
               // error message.
               if (registeredProvider === "registering") {
@@ -291,8 +364,7 @@ function init(): ExtensionState {
                   error.message
                 );
               }
-            }
-          );
+            });
         } else {
           Main.notifyError(
             "IntelliJ IDEA not found",
