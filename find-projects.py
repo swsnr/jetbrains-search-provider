@@ -90,9 +90,8 @@ def find_recent_projects(recent_projects_file):
     paths = (Path(el.attrib['value'].replace('$USER_HOME$', '~'))
              for el in
              document.findall('.//option[@name="recentPaths"]/list/option'))
-    projects = (get_project(directory) for directory in paths if
+    return list(get_project(directory) for directory in paths if
                 directory.expanduser().is_dir())
-    return dict((project['id'], project) for project in projects)
 
 
 def success(projects):

@@ -239,10 +239,10 @@ interface HelperSuccessResult {
   /**
    * Discovered projects
    */
-  readonly projects: {
+  readonly projects: [
     // Note: Do not use the Project type, lest we change it accidentally and
     // thus break deserialization.
-    [key: string]: {
+    {
       /**
        * The project identifier.
        */
@@ -262,8 +262,8 @@ interface HelperSuccessResult {
        * The absolute path to the project.
        */
       readonly abspath: string;
-    };
-  };
+    }
+  ];
 }
 
 interface HelperErrorResult {
@@ -320,7 +320,7 @@ const recentProjects = (
       case "error":
         throw new RecentProjectsError(output.message);
       case "success":
-        return new Map(Object.entries(output.projects));
+        return new Map(output.projects.map((p) => [p.id, p]));
     }
   });
 
