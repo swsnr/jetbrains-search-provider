@@ -4,7 +4,7 @@ A Gnome shell extension to find recent IntelliJ IDEA projects in search.
 
 ## Requirements
 
-- Gnome shell 3.34 or newer
+- Gnome shell 3.36 or newer
 - Python 3.6 or newer (as `python3` in `$PATH`)
 
 ## Installation
