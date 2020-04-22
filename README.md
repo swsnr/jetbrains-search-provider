@@ -49,7 +49,7 @@ Stand on the shoulders of giants and you can even write Javascript for Gnome.
 
 ## License
 
-Copyright 2019 Sebastian Wiesner <sebastian@swsnr.de>
+Copyright Sebastian Wiesner <sebastian@swsnr.de>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
