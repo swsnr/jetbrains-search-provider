@@ -38,7 +38,7 @@ const execCommand = (argv: ReadonlyArray<string>): Promise<string> =>
       argv: argv,
       // There are also other types of flags for merging stdout/stderr,
       // redirecting to /dev/null or inheriting the parent's pipes
-      flags: Gio.SubprocessFlags.STDOUT_PIPE
+      flags: Gio.SubprocessFlags.STDOUT_PIPE,
     });
 
     // Classes that implement GInitable must be initialized before use, but
@@ -71,7 +71,7 @@ const findIDEA = (): imports.gi.Gio.DesktopAppInfo | null => {
     // Snap installation
     "intellij-idea-ultimate_intellij-idea-ultimate.desktop",
     // Flatpak installation
-    "com.jetbrains.IntelliJ-IDEA-Ultimate.desktop"
+    "com.jetbrains.IntelliJ-IDEA-Ultimate.desktop",
   ];
   for (const desktopId of candidates) {
     const app = Gio.DesktopAppInfo.new(desktopId);
@@ -134,7 +134,7 @@ const projectMatchesAllTerms = (
   terms: ReadonlyArray<string>
 ): boolean =>
   terms.every(
-    term => project.name.includes(term) || project.path.includes(term)
+    (term) => project.name.includes(term) || project.path.includes(term)
   );
 
 /**
@@ -148,7 +148,7 @@ const findMatchingIds = (
   projects: ReadonlyArray<Project>,
   terms: ReadonlyArray<string>
 ): string[] =>
-  projects.filter(p => projectMatchesAllTerms(p, terms)).map(p => p.id);
+  projects.filter((p) => projectMatchesAllTerms(p, terms)).map((p) => p.id);
 
 /**
  * Launch IDEA or show an error notification on failure.
@@ -185,12 +185,12 @@ const resultMetaForProject = (idea: imports.gi.Gio.DesktopAppInfo) => (
       return new St.Icon({
         gicon,
         // eslint-disable-next-line @typescript-eslint/camelcase
-        icon_size: size
+        icon_size: size,
       });
     } else {
       return null;
     }
-  }
+  },
 });
 
 /**
@@ -228,7 +228,7 @@ const createProvider = (
       launchIDEAInShell(idea, [Gio.File.new_for_path(project.abspath)]);
     }
   },
-  filterResults: (results, max): string[] => results.slice(0, max)
+  filterResults: (results, max): string[] => results.slice(0, max),
 });
 
 /**
@@ -246,7 +246,7 @@ const recentProjects = (
   } else {
     l(`Running Python helper ${helper} to discover IntelliJ IDEA projects`);
     return execCommand(["python3", helper]).then(
-      output => new Map(Object.entries(JSON.parse(output)))
+      (output) => new Map(Object.entries(JSON.parse(output)))
     );
   }
 };
@@ -271,7 +271,7 @@ function init(): ExtensionState {
         if (idea) {
           registeredProvider = "registering";
           recentProjects(Self.dir).then(
-            projects => {
+            (projects) => {
               if (registeredProvider === "registering") {
                 // If the user hasn't disabled the extension meanwhile create the
                 // search provider and registered it, both in our global variable
@@ -282,7 +282,7 @@ function init(): ExtensionState {
                 );
               }
             },
-            error => {
+            (error) => {
               // If the the user hasn't disabled the extension meanwhile show an
               // error message.
               if (registeredProvider === "registering") {
@@ -312,6 +312,6 @@ function init(): ExtensionState {
       // In any case mark the provider as unregistered, so that we can register it
       // again when the user reenables the extension.
       registeredProvider = "unregistered";
-    }
+    },
   };
 }
