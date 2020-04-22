@@ -278,7 +278,7 @@ interface HelperErrorResult {
 /**
  * The output of our helper;  keep in sync with what the helper really prints
  */
-type HelperOutput = HelperSuccessResult | HelperErrorResult;
+type HelperResult = HelperSuccessResult | HelperErrorResult;
 
 /**
  * Run the recent projects helper.
@@ -288,13 +288,15 @@ type HelperOutput = HelperSuccessResult | HelperErrorResult;
  */
 const runRecentProjectsHelper = (
   extensionDirectory: imports.gi.Gio.File
-): Promise<HelperOutput> => {
+): Promise<unknown> => {
   const helper = extensionDirectory.get_child("find-projects.py").get_path();
   if (!helper) {
     return Promise.reject(new Error("Helper find-projects.py doesn't exist!"));
   } else {
     l(`Running Python helper ${helper} to discover IntelliJ IDEA projects`);
-    return execCommand(["python3", helper]).then(JSON.parse);
+    return execCommand(["python3", helper]).then((output) =>
+      JSON.parse(output)
+    );
   }
 };
 
@@ -307,6 +309,32 @@ class RecentProjectsError extends Error {
 }
 
 /**
+ * The
+ * @param o The object to test
+ */
+const unsafeIsHelperResult = (o: unknown): o is HelperResult => {
+  if (!o || typeof o !== "object") {
+    return false;
+  }
+
+  const kind = (o as { kind?: unknown }).kind;
+  if (!kind || typeof kind !== "string") {
+    return false;
+  }
+  const message = (o as { message?: unknown }).message;
+  const projects = (o as { projects?: unknown }).projects;
+
+  switch (kind) {
+    case "success":
+      return Array.isArray(projects);
+    case "error":
+      return !!message && typeof message === "string";
+    default:
+      return false;
+  }
+};
+
+/**
  * Get all recent IDEA projects.
  *
  * @param extensionDirectory The directory of this extension
@@ -316,6 +344,11 @@ const recentProjects = (
   extensionDirectory: imports.gi.Gio.File
 ): Promise<ProjectMap> =>
   runRecentProjectsHelper(extensionDirectory).then((output) => {
+    if (!unsafeIsHelperResult(output)) {
+      throw new RecentProjectsError(
+        `Received invalid output from helper: ${JSON.stringify(output)}`
+      );
+    }
     switch (output.kind) {
       case "error":
         throw new RecentProjectsError(output.message);
