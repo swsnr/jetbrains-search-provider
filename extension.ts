@@ -61,8 +61,6 @@ const execCommand = (argv: ReadonlyArray<string>): Promise<string> =>
 
 /**
  * Find the IDEA App.
- *
- * Currently only supports IDEA Ultimate installed from Snap Store.
  */
 const findIDEA = (): imports.gi.Gio.DesktopAppInfo | null => {
   const candidates = [
