@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const Gio = imports.gi.Gio;
-const St = imports.gi.St;
+import Gio = imports.gi.Gio;
+import St = imports.gi.St;
 
-const Main = imports.ui.main;
+import Main = imports.ui.main;
+import ExtensionUtils = imports.misc.extensionUtils;
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-const Self = imports.misc.extensionUtils.getCurrentExtension()!;
+const Self = ExtensionUtils.getCurrentExtension()!;
 
 /**
  * Log a message from this extension, with prefix.
@@ -62,7 +63,7 @@ const execCommand = (argv: ReadonlyArray<string>): Promise<string> =>
 /**
  * Find the IDEA App.
  */
-const findIDEA = (): imports.gi.Gio.DesktopAppInfo | null => {
+const findIDEA = (): Gio.DesktopAppInfo | null => {
   const candidates = [
     // Arch Linux AUR package
     "jetbrains-idea.desktop",
@@ -159,13 +160,13 @@ const findMatchingIds = (
  * @param files Files to launch IDEA with
  */
 const launchIDEAInShell = (
-  idea: imports.gi.Gio.DesktopAppInfo,
-  files?: imports.gi.Gio.File[]
+  idea: Gio.DesktopAppInfo,
+  files?: Gio.File[]
 ): void => {
   try {
     idea.launch(files || [], null);
   } catch (err) {
-    imports.ui.main.notifyError("Failed to launch IntelliJ IDEA", err.message);
+    Main.notifyError("Failed to launch IntelliJ IDEA", err.message);
   }
 };
 
@@ -175,13 +176,13 @@ const launchIDEAInShell = (
  * @param idea The IDEA app info
  * @returns A function with creates result metadata for a given project.
  */
-const resultMetaForProject = (idea: imports.gi.Gio.DesktopAppInfo) => (
+const resultMetaForProject = (idea: Gio.DesktopAppInfo) => (
   project: Project
 ): ResultMeta => ({
   id: project.id,
   name: project.name,
   description: project.path,
-  createIcon: (size): imports.gi.St.Icon | null => {
+  createIcon: (size): St.Icon | null => {
     const gicon = idea.get_icon();
     if (gicon) {
       return new St.Icon({
@@ -211,7 +212,7 @@ const resultMetaForProject = (idea: imports.gi.Gio.DesktopAppInfo) => (
  */
 const createProvider = (
   projects: ProjectMap,
-  idea: imports.gi.Gio.DesktopAppInfo
+  idea: Gio.DesktopAppInfo
 ): SearchProvider => ({
   id: Self.uuid,
   isRemoteProvider: false,
@@ -286,7 +287,7 @@ type HelperResult = HelperSuccessResult | HelperErrorResult;
  * @returns The output of our Python helper
  */
 const runRecentProjectsHelper = (
-  extensionDirectory: imports.gi.Gio.File
+  extensionDirectory: Gio.File
 ): Promise<unknown> => {
   const helper = extensionDirectory.get_child("find-projects.py").get_path();
   if (!helper) {
@@ -339,9 +340,7 @@ const unsafeIsHelperResult = (o: unknown): o is HelperResult => {
  * @param extensionDirectory The directory of this extension
  * @returns A promise with all recent IDEA projects.
  */
-const recentProjects = (
-  extensionDirectory: imports.gi.Gio.File
-): Promise<ProjectMap> =>
+const recentProjects = (extensionDirectory: Gio.File): Promise<ProjectMap> =>
   runRecentProjectsHelper(extensionDirectory).then((output) => {
     if (!unsafeIsHelperResult(output)) {
       throw new RecentProjectsError(
