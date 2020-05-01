@@ -120,7 +120,9 @@ const lookupProjects = (
   projects: ProjectMap,
   identifiers: ReadonlyArray<string>
 ): Project[] =>
-  identifiers.map((id) => projects.get(id)).filter((p): p is Project => !!p);
+  identifiers
+    .map((id) => projects.get(id))
+    .filter((p): p is Project => p !== undefined);
 
 /**
  * Whether the project matches all terms.
@@ -328,7 +330,7 @@ const unsafeIsHelperResult = (o: unknown): o is HelperResult => {
     case "success":
       return Array.isArray(projects);
     case "error":
-      return !!message && typeof message === "string";
+      return typeof message === "string";
     default:
       return false;
   }
