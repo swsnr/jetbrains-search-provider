@@ -93,6 +93,15 @@ const PRODUCTS: Map<string, ProductInfo> = new Map<string, ProductInfo>(
       ],
     },
     {
+      key: "idea-ce",
+      desktopNames: [
+        // Toolbox installation
+        "jetbrains-idea-ce.desktop",
+        // Arch Linux package,
+        "idea.desktop",
+      ],
+    },
+    {
       key: "webstorm",
       desktopNames: [
         // Toolbox installation
