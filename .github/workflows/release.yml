@@ -19,7 +19,7 @@ jobs:
         uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: intellij-idea-search-provider@swsnr.de.shell-extension.zip
-          asset_name: intellij-idea-search-provider@swsnr.de.shell-extension.zip
+          file: jetbrains-search-provider@swsnr.de.shell-extension.zip
+          asset_name: jetbrains-search-provider@swsnr.de.shell-extension.zip
           tag: ${{ github.ref }}
           overwrite: true

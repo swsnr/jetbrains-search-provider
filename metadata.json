@@ -1,8 +1,10 @@
 {
-  "uuid": "intellij-idea-search-provider@swsnr.de",
-  "name": "IntelliJ IDEA Search Provider",
-  "description": "Search recent IDEA projects in Gnome shell",
-  "version": 5,
-  "shell-version": ["3.36"],
-  "url": "https://github.com/lunaryorn/gnome-intellij-idea-search-provider"
+  "uuid": "jetbrains-search-provider@swsnr.de",
+  "name": "JetBrains Search Provider",
+  "description": "Search recent projects of JetBrains IDEs in Gnome shell",
+  "version": 1,
+  "shell-version": [
+    "3.36"
+  ],
+  "url": "https://github.com/lunaryorn/jetbrains-search-provider"
 }

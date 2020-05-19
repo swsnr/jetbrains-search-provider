@@ -1,6 +1,8 @@
-# Gnome shell search provider for Intellij IDEA projects
+# Jetbrains search provider
 
-A Gnome shell extension to find recent IntelliJ IDEA projects in search.
+A Gnome shell extension to add recent projects from JetBrains IDEs to search.
+
+**Note:** This extension is not affiliated with or endorsed by JetBrains.
 
 ## Requirements
 
@@ -14,7 +16,7 @@ Install via [Gnome Extensions][gexts].
 Alternatively download the latest `.shell-extension.zip` from [Releases] and run
 
 ```console
-$ gnome-extensions install intellij-idea-search-provider@swsnr.de.shell-extension.zip
+$ gnome-extensions install jetbrains-search-provider@swsnr.de.shell-extension.zip
 ```
 
 **Note:** Version numbers from Gnome Extensions and Releases differ, because
@@ -22,19 +24,13 @@ uploading to Gnome Extensions renumbers releases. If you switch between
 installation methods, remove and reinstall.
 
 [gexts]: https://extensions.gnome.org/extension/2341/intellij-idea-search-provider/
-[releases]: https://github.com/lunaryorn/gnome-intellij-idea-search-provider/releases
+[releases]: https://github.com/lunaryorn/jetbrains-search-provider/releases
 
 ## Limitations
 
 - I do not know how to parse XML in GJS, so finding recent IntelliJ projects
   relies on a Python helper which parses `recentProjects.xml` and outputs
-  relevant parts as JSON (see [GH-1]).
-- I use Ultimate, so this extension only supports IDEA Ultimate, installed with
-  `snap`, `flatpak` or from AUR. Pull requests for Community and Toolbox
-  welcome, see [GH-2].
-
-[gh-1]: https://github.com/lunaryorn/gnome-intellij-idea-search-provider/issues/1
-[gh-2]: https://github.com/lunaryorn/gnome-intellij-idea-search-provider/issues/2
+  relevant parts as JSON.
 
 ## Credits
 
@@ -51,14 +47,16 @@ Stand on the shoulders of giants and you can even write Javascript for Gnome.
 
 Copyright Sebastian Wiesner <sebastian@swsnr.de>
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
 
-    http://www.apache.org/licenses/LICENSE-2.0
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.

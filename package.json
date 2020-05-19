@@ -1,10 +1,10 @@
 {
-  "name": "gnome-intellij-idea-search-provider",
-  "version": "5",
-  "description": "Gnome Shell Search Provider for IntelliJ IDEA projects",
-  "repository": "https://github.com/lunaryorn/gnome-intellij-idea-search-provider.git",
+  "name": "jetbrains-search-provider",
+  "version": "1",
+  "description": "Search recent projects of JetBrains IDEs in Gnome shell",
+  "repository": "https://github.com/lunaryorn/jetbrains-search-provider.git",
   "author": "Sebastian Wiesner <sebastian@swsnr.de>",
-  "license": "Apache-2.0",
+  "license": "GPL-2",
   "private": true,
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.7.0",
