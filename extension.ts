@@ -247,14 +247,16 @@ const resultMetaForProject = (idea: Gio.DesktopAppInfo) => (
  * projects, since JetBrains products dont provide an interface start a recent
  * projects search within the app.
  *
- * @param projects The project to search in
- * @param app The application info for the product the projects belong to
+ * @param product The product to create a search provider for.
+ * @param app The application info for the product.
+ * @param projects The recent projects of the product.
  */
 const createProvider = (
-  projects: ProjectMap,
-  app: Gio.DesktopAppInfo
+  product: ProductInfo,
+  app: Gio.DesktopAppInfo,
+  projects: ProjectMap
 ): SearchProvider => ({
-  id: Self.uuid,
+  id: `${Self.uuid}-${product.key}`,
   isRemoteProvider: false,
   canLaunchSearch: true,
   appInfo: app,
@@ -461,7 +463,7 @@ function init(): ExtensionState {
                 );
                 return;
               }
-              providers.push(createProvider(projects, app));
+              providers.push(createProvider(product, app, projects));
             });
 
             providers.forEach((provider) => {
