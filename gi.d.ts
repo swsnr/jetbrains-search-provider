@@ -41,7 +41,7 @@ declare namespace imports {
         get_path(): string | null;
       }
 
-      class Cancellable { }
+      class Cancellable {}
 
       type SubprocessFlags = number;
 

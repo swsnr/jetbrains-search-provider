@@ -3,8 +3,6 @@
   "name": "JetBrains Search Provider",
   "description": "Search recent projects of JetBrains IDEs in Gnome shell",
   "version": 1,
-  "shell-version": [
-    "3.36"
-  ],
+  "shell-version": ["3.36"],
   "url": "https://github.com/lunaryorn/jetbrains-search-provider"
 }
