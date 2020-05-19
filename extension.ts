@@ -64,13 +64,14 @@ const execCommand = (argv: ReadonlyArray<string>): Promise<string> =>
 
 interface ProductInfo {
   /**
+   * The product key.
+   */
+  readonly key: string;
+
+  /**
    * Desktop file names this product is available as.
    */
   readonly desktopNames: ReadonlyArray<string>;
-}
-
-interface Products {
-  readonly [key: string]: ProductInfo;
 }
 
 /**
@@ -78,24 +79,28 @@ interface Products {
  *
  * Keys need to be the same as in find-projects.py
  */
-const PRODUCTS: Products = {
-  idea: {
-    desktopNames: [
-      // Arch Linux AUR package and toolbox installation
-      "jetbrains-idea.desktop",
-      // Snap installation
-      "intellij-idea-ultimate_intellij-idea-ultimate.desktop",
-      // Flatpak installation
-      "com.jetbrains.IntelliJ-IDEA-Ultimate.desktop",
-    ],
-  },
-  webstorm: {
-    desktopNames: [
-      // Toolbox installation
-      "jetbrains-webstorm.desktop",
-    ],
-  },
-};
+const PRODUCTS: Map<string, ProductInfo> = new Map<string, ProductInfo>(
+  [
+    {
+      key: "idea",
+      desktopNames: [
+        // Arch Linux AUR package and toolbox installation
+        "jetbrains-idea.desktop",
+        // Snap installation
+        "intellij-idea-ultimate_intellij-idea-ultimate.desktop",
+        // Flatpak installation
+        "com.jetbrains.IntelliJ-IDEA-Ultimate.desktop",
+      ],
+    },
+    {
+      key: "webstorm",
+      desktopNames: [
+        // Toolbox installation
+        "jetbrains-webstorm.desktop",
+      ],
+    },
+  ].map((product) => [product.key, product])
+);
 
 /**
  * Find an app by desktop names.
@@ -243,7 +248,7 @@ const resultMetaForProject = (idea: Gio.DesktopAppInfo) => (
  * projects search within the app.
  *
  * @param projects The project to search in
- * @param app The IntelliJ IDEA application info
+ * @param app The application info for the product the projects belong to
  */
 const createProvider = (
   projects: ProjectMap,
@@ -441,11 +446,18 @@ function init(): ExtensionState {
             const providers: SearchProvider[] = [];
 
             productProjects.forEach((projects, key) => {
-              const product = PRODUCTS[key];
+              const product = PRODUCTS.get(key);
+              if (!product) {
+                l(
+                  `No product found for key ${key}: Report to <https://github.com/lunaryorn/jetbrains-search-provider>`
+                );
+                return;
+              }
+
               const app = findApp(product.desktopNames);
               if (!app) {
                 l(
-                  `JetBrains app ${key} not found; consider reporting an issue at <https://github.com/lunaryorn/jetbrains-search-provider>`
+                  `JetBrains app ${key} not found; report to <https://github.com/lunaryorn/jetbrains-search-provider>`
                 );
                 return;
               }
