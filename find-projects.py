@@ -16,14 +16,26 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
+import sys
 import os
 import xml.etree.ElementTree as etree
 import json
 import re
+from collections import namedtuple
 from pathlib import Path
+from traceback import format_exc
 
 
-def idea_version(config_dir):
+ProductInfo = namedtuple('ProductInfo', 'key config_glob')
+
+
+PRODUCTS = [
+    ProductInfo(key='idea', config_glob='IntelliJIdea*'),
+    ProductInfo(key='webstorm', config_glob='WebStorm*')
+]
+
+
+def product_version(config_dir):
     version = re.search(r'\d{4}\.\d{1,2}', config_dir.name)
     if version:
         year, revision = version.group(0).split('.')
@@ -32,35 +44,31 @@ def idea_version(config_dir):
         raise ValueError(f'Not a valid IDEA config directory: {config_dir}')
 
 
-def find_idea_directories():
+def find_config_directories(product: ProductInfo):
     """
-    Find all available IDEA configuration directories together with their version.
+    Find all config directories for the given product.
     """
     config_home = os.environb.get(b'XDG_CONFIG_HOME', b'')
     if config_home:
         config_home = Path(config_home)
     else:
         config_home = Path.home() / '.config'
-    yield from (config_home / 'JetBrains').glob('IntelliJIdea*')
-    yield from Path.home().glob('.IntelliJIdea*')
+    yield from (config_home / 'JetBrains').glob(product.config_glob)
 
 
-def find_latest_recent_projects_file():
+def find_latest_recent_projects_file(product: ProductInfo):
     """
-    Find the `recentProjects.xml` file of the most recent IDEA version.
+    Find the `recentProjects.xml` file of the most recent version of the given product.
     """
-    config_dir = max(find_idea_directories(), key=idea_version, default=None)
+    config_dir = max(find_config_directories(product),
+                     key=product_version, default=None)
     if config_dir:
-        year, _ = idea_version(config_dir)
-        if 2020 <= year:
-            return config_dir / 'options' / 'recentProjects.xml'
-        else:
-            return config_dir / 'config' / 'options' / 'recentProjects.xml'
+        return config_dir / 'options' / 'recentProjects.xml'
     else:
         return None
 
 
-def get_project(directory):
+def get_project(product, directory):
     """
     Get the project in the given directory.
 
@@ -77,14 +85,14 @@ def get_project(directory):
         # Conveniently use the absolute path as ID, because it's definitely unique,
         # and prefix it with the name of this launch to avoid conflicts with IDs
         # from other providers.
-        'id': 'intellij-idea-search-provider-{0}'.format(directory.expanduser()),
+        'id': f'jetbrains-search-provider-{product.key}-{directory.expanduser()}',
         'name': name,
         'path': str(directory),
         'abspath': str(directory.expanduser())
     }
 
 
-def find_recent_projects(recent_projects_file):
+def find_recent_projects(product, recent_projects_file):
     """
     Find all recent projects listed in the given recent projects XML file.
     """
@@ -92,7 +100,7 @@ def find_recent_projects(recent_projects_file):
     paths = (Path(el.attrib['value'].replace('$USER_HOME$', '~'))
              for el in
              document.findall('.//option[@name="recentPaths"]/list/option'))
-    return list(get_project(directory) for directory in paths if
+    return list(get_project(product, directory) for directory in paths if
                 directory.expanduser().is_dir())
 
 
@@ -103,20 +111,30 @@ def success(projects):
     }
 
 
-def error(message):
+def error(message, traceback):
     return {
         'kind': 'error',
-        'message': message
+        'message': message,
+        'traceback': traceback
     }
 
 
+def find_all_recent_projects():
+    for product in PRODUCTS:
+        config_file = find_latest_recent_projects_file(product)
+        if config_file:
+            yield (product.key, find_recent_projects(product, config_file))
+        else:
+            yield (product.key, None)
+
+
 def main():
-    config_file = find_latest_recent_projects_file()
-    if config_file:
-        output = success(find_recent_projects(config_file))
-    else:
-        output = error('No IDEA configuration directory found')
-    print(json.dumps(output))
+    try:
+        projects = list(find_all_recent_projects())
+        print(json.dumps(success(projects)))
+    except Exception as exc:
+        print(json.dumps(error(str(exc), format_exc())))
+        sys.exit(1)
 
 
 if __name__ == '__main__':

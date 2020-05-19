@@ -62,19 +62,48 @@ const execCommand = (argv: ReadonlyArray<string>): Promise<string> =>
     });
   });
 
+interface ProductInfo {
+  /**
+   * Desktop file names this product is available as.
+   */
+  readonly desktopNames: ReadonlyArray<string>;
+}
+
+interface Products {
+  readonly [key: string]: ProductInfo;
+}
+
 /**
- * Find the IDEA App.
+ * Known products.
+ *
+ * Keys need to be the same as in find-projects.py
  */
-const findIDEA = (): Gio.DesktopAppInfo | null => {
-  const candidates = [
-    // Arch Linux AUR package and toolbox installation
-    "jetbrains-idea.desktop",
-    // Snap installation
-    "intellij-idea-ultimate_intellij-idea-ultimate.desktop",
-    // Flatpak installation
-    "com.jetbrains.IntelliJ-IDEA-Ultimate.desktop",
-  ];
-  for (const desktopId of candidates) {
+const PRODUCTS: Products = {
+  idea: {
+    desktopNames: [
+      // Arch Linux AUR package and toolbox installation
+      "jetbrains-idea.desktop",
+      // Snap installation
+      "intellij-idea-ultimate_intellij-idea-ultimate.desktop",
+      // Flatpak installation
+      "com.jetbrains.IntelliJ-IDEA-Ultimate.desktop",
+    ],
+  },
+  webstorm: {
+    desktopNames: [
+      // Toolbox installation
+      "jetbrains-webstorm.desktop",
+    ],
+  },
+};
+
+/**
+ * Find an app by desktop names.
+ */
+const findApp = (
+  desktopNames: ReadonlyArray<string>
+): Gio.DesktopAppInfo | null => {
+  for (const desktopId of desktopNames) {
     const app = Gio.DesktopAppInfo.new(desktopId);
     if (app) {
       l(`Found IntelliJ IDEA at ${desktopId}`);
@@ -110,6 +139,8 @@ interface Project {
 }
 
 type ProjectMap = Map<string, Project>;
+
+type ProductProjects = Map<string, ProjectMap>;
 
 /**
  * Lookup projects by their identifiers.
@@ -163,14 +194,14 @@ const findMatchingIds = (
  * @param idea Desktop App Info for IDEA
  * @param files Files to launch IDEA with
  */
-const launchIDEAInShell = (
+const launchAppInShell = (
   idea: Gio.DesktopAppInfo,
   files?: Gio.File[]
 ): void => {
   try {
     idea.launch(files || [], null);
   } catch (err) {
-    Main.notifyError("Failed to launch IntelliJ IDEA", err.message);
+    Main.notifyError(`Failed to launch app ${idea.get_name()}`, err.message);
   }
 };
 
@@ -201,38 +232,38 @@ const resultMetaForProject = (idea: Gio.DesktopAppInfo) => (
 });
 
 /**
- * Create a search provider for IDEA projects.
+ * Create a search provider for the given projects.
  *
  * The project exposes the given projects for search.  On activation it uses the
- * given IDEA app to open projects.
+ * given app to open projects.
  *
  * On search provider activation, that is, when the user clicks on the search
- * provider icon to resume search in the app, it merely opens IDEA without any
- * projects, since IDEA doesn't provide an interface start a recent projects
- * search within IDEA.
+ * provider icon to resume search in the app, it merely opens the app without any
+ * projects, since JetBrains products dont provide an interface start a recent
+ * projects search within the app.
  *
  * @param projects The project to search in
- * @param idea The IntelliJ IDEA application info
+ * @param app The IntelliJ IDEA application info
  */
 const createProvider = (
   projects: ProjectMap,
-  idea: Gio.DesktopAppInfo
+  app: Gio.DesktopAppInfo
 ): SearchProvider => ({
   id: Self.uuid,
   isRemoteProvider: false,
   canLaunchSearch: true,
-  appInfo: idea,
+  appInfo: app,
   getInitialResultSet: (terms, callback): void =>
     callback(findMatchingIds([...projects.values()], terms)),
   getSubsearchResultSet: (current, terms, callback): void =>
     callback(findMatchingIds(lookupProjects(projects, current), terms)),
   getResultMetas: (ids, callback): void =>
-    callback(lookupProjects(projects, ids).map(resultMetaForProject(idea))),
-  launchSearch: (): void => launchIDEAInShell(idea),
+    callback(lookupProjects(projects, ids).map(resultMetaForProject(app))),
+  launchSearch: (): void => launchAppInShell(app),
   activateResult: (id: string): void => {
     const project = projects.get(id);
     if (project) {
-      launchIDEAInShell(idea, [Gio.File.new_for_path(project.abspath)]);
+      launchAppInShell(app, [Gio.File.new_for_path(project.abspath)]);
     }
   },
   filterResults: (results, max): string[] => results.slice(0, max),
@@ -244,29 +275,34 @@ interface HelperSuccessResult {
    * Discovered projects
    */
   readonly projects: [
-    // Note: Do not use the Project type, lest we change it accidentally and
-    // thus break deserialization.
-    {
-      /**
-       * The project identifier.
-       */
-      readonly id: string;
+    [
+      string,
+      [
+        // Note: Do not use the Project type, lest we change it accidentally and
+        // thus break deserialization.
+        {
+          /**
+           * The project identifier.
+           */
+          readonly id: string;
 
-      /**
-       * The project name.
-       */
-      readonly name: string;
+          /**
+           * The project name.
+           */
+          readonly name: string;
 
-      /**
-       * The readable path, e.g. ~ instead of /home/…
-       */
-      readonly path: string;
+          /**
+           * The readable path, e.g. ~ instead of /home/…
+           */
+          readonly path: string;
 
-      /**
-       * The absolute path to the project.
-       */
-      readonly abspath: string;
-    }
+          /**
+           * The absolute path to the project.
+           */
+          readonly abspath: string;
+        }
+      ]
+    ]
   ];
 }
 
@@ -277,6 +313,11 @@ interface HelperErrorResult {
    * A human readable error message.
    */
   readonly message: string;
+
+  /**
+   * The traceback, for logging.
+   */
+  readonly traceback: string;
 }
 
 /**
@@ -297,7 +338,7 @@ const runRecentProjectsHelper = (
   if (!helper) {
     return Promise.reject(new Error("Helper find-projects.py doesn't exist!"));
   } else {
-    l(`Running Python helper ${helper} to discover IntelliJ IDEA projects`);
+    l(`Running Python helper ${helper} to discover JetBrains projects`);
     return execCommand(["python3", helper]).then((output) =>
       JSON.parse(output)
     );
@@ -313,7 +354,10 @@ class RecentProjectsError extends Error {
 }
 
 /**
- * The
+ * Whether o is a helper result.
+ *
+ * Unsafe because it doesn't full test the entire shape.
+ *
  * @param o The object to test
  */
 const unsafeIsHelperResult = (o: unknown): o is HelperResult => {
@@ -344,7 +388,9 @@ const unsafeIsHelperResult = (o: unknown): o is HelperResult => {
  * @param extensionDirectory The directory of this extension
  * @returns A promise with all recent IDEA projects.
  */
-const recentProjects = (extensionDirectory: Gio.File): Promise<ProjectMap> =>
+const recentProjects = (
+  extensionDirectory: Gio.File
+): Promise<ProductProjects> =>
   runRecentProjectsHelper(extensionDirectory).then((output) => {
     if (!unsafeIsHelperResult(output)) {
       throw new RecentProjectsError(
@@ -353,13 +399,22 @@ const recentProjects = (extensionDirectory: Gio.File): Promise<ProjectMap> =>
     }
     switch (output.kind) {
       case "error":
+        l(`Helper failed: ${output.traceback}`);
         throw new RecentProjectsError(output.message);
       case "success":
-        return new Map(output.projects.map((p) => [p.id, p]));
+        return new Map(
+          output.projects.map(([key, projects]) => [
+            key,
+            new Map(projects.map((p) => [p.id, p])),
+          ])
+        );
     }
   });
 
-type RegisteredProvider = "unregistered" | "registering" | SearchProvider;
+type RegisteredProvider =
+  | "unregistered"
+  | "registering"
+  | ReadonlyArray<SearchProvider>;
 
 /**
  * Initialize this extension immediately after loading.
@@ -369,56 +424,62 @@ type RegisteredProvider = "unregistered" | "registering" | SearchProvider;
 // eslint-disable-next-line @typescript-eslint/no-empty-function,@typescript-eslint/no-unused-vars
 function init(): ExtensionState {
   // eslint-disable-next-line immutable/no-let
-  let registeredProvider: RegisteredProvider = "unregistered";
+  let registeredProviders: RegisteredProvider = "unregistered";
 
   return {
     enable: (): void => {
-      if (registeredProvider === "unregistered") {
+      if (registeredProviders === "unregistered") {
         l(`enabling version ${Self.metadata.version}`);
-        const idea = findIDEA();
-        if (idea) {
-          registeredProvider = "registering";
-          recentProjects(Self.dir)
-            .then((projects) => {
-              if (registeredProvider === "registering") {
-                // If the user hasn't disabled the extension meanwhile create the
-                // search provider and registered it, both in our global variable
-                // and for gnome shell.
-                registeredProvider = createProvider(projects, idea);
-                Main.overview.viewSelector._searchResults._registerProvider(
-                  registeredProvider
+        registeredProviders = "registering";
+        recentProjects(Self.dir)
+          .then((productProjects) => {
+            if (registeredProviders !== "registering") {
+              // Registration was aborted, so let's not continue
+              return;
+            }
+
+            const providers: SearchProvider[] = [];
+
+            productProjects.forEach((projects, key) => {
+              const product = PRODUCTS[key];
+              const app = findApp(product.desktopNames);
+              if (!app) {
+                l(
+                  `JetBrains app ${key} not found; consider reporting an issue at <https://github.com/lunaryorn/jetbrains-search-provider>`
                 );
+                return;
               }
-            })
-            .catch((error) => {
-              // If the the user hasn't disabled the extension meanwhile show an
-              // error message.
-              if (registeredProvider === "registering") {
-                Main.notifyError(
-                  "Failed to find recent projects",
-                  error.message
-                );
-              }
+              providers.push(createProvider(projects, app));
             });
-        } else {
-          Main.notifyError(
-            "IntelliJ IDEA not found",
-            "Consider reporting on https://github.com/lunaryorn/gnome-intellij-idea-search-provider/issues/2"
-          );
-        }
+
+            providers.forEach((provider) => {
+              Main.overview.viewSelector._searchResults._registerProvider(
+                provider
+              );
+            });
+          })
+          .catch((error) => {
+            // If the the user hasn't disabled the extension meanwhile show an
+            // error message.
+            if (registeredProviders === "registering") {
+              Main.notifyError("Failed to find recent projects", error.message);
+            }
+          });
       }
     },
     disable: (): void => {
-      if (typeof registeredProvider !== "string") {
+      if (typeof registeredProviders !== "string") {
         // Remove the provider if it was registered
         l(`Disabling ${Self.metadata.version}`);
-        Main.overview.viewSelector._searchResults._unregisterProvider(
-          registeredProvider
-        );
+        registeredProviders.forEach((provider) => {
+          Main.overview.viewSelector._searchResults._unregisterProvider(
+            provider
+          );
+        });
       }
       // In any case mark the provider as unregistered, so that we can register it
       // again when the user reenables the extension.
-      registeredProvider = "unregistered";
+      registeredProviders = "unregistered";
     },
   };
 }
