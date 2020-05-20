@@ -102,8 +102,9 @@ def find_recent_projects(product, recent_projects_file):
     paths = (Path(el.attrib['value'].replace('$USER_HOME$', '~'))
              for el in
              document.findall('.//option[@name="recentPaths"]/list/option'))
-    return list(get_project(product, directory) for directory in paths if
-                directory.expanduser().is_dir())
+    for directory in paths:
+        if directory.expanduser().is_dir():
+            yield get_project(product, directory)
 
 
 def success(projects):
@@ -125,9 +126,9 @@ def find_all_recent_projects():
     for product in PRODUCTS:
         config_file = find_latest_recent_projects_file(product)
         if config_file:
-            yield (product.key, find_recent_projects(product, config_file))
+            yield (product.key, list(find_recent_projects(product, config_file)))
         else:
-            yield (product.key, None)
+            yield (product.key, [])
 
 
 def main():
