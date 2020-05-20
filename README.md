@@ -9,6 +9,7 @@ Supports:
 - IDEA Ultimate
 - IDEA Community Edition
 - Webstorm
+- CLion
 
 ## Requirements
 

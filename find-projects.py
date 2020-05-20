@@ -32,7 +32,8 @@ ProductInfo = namedtuple('ProductInfo', 'key config_glob')
 PRODUCTS = [
     ProductInfo(key='idea', config_glob='IntelliJIdea*'),
     ProductInfo(key='idea-ce', config_glob='IdeaIC*'),
-    ProductInfo(key='webstorm', config_glob='WebStorm*')
+    ProductInfo(key='webstorm', config_glob='WebStorm*'),
+    ProductInfo(key='clion', config_glob='CLion*'),
 ]
 
 

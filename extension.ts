@@ -108,6 +108,13 @@ const PRODUCTS: Map<string, ProductInfo> = new Map<string, ProductInfo>(
         "jetbrains-webstorm.desktop",
       ],
     },
+    {
+      key: "clion",
+      desktopNames: [
+        // Toolbox installation
+        "jetbrains-clion.desktop",
+      ],
+    },
   ].map((product) => [product.key, product])
 );
 
