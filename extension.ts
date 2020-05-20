@@ -292,41 +292,41 @@ const createProvider = (
   filterResults: (results, max): string[] => results.slice(0, max),
 });
 
+/**
+ * A project returned by the helper.
+ *
+ * Defined separately from the Project type to have a clear boundary of
+ * serialization, and allow us to freely change the Project type while retaining
+ * a stable interface for serialization.
+ */
+interface ProjectFromHelper {
+  /**
+   * The project identifier.
+   */
+  readonly id: string;
+
+  /**
+   * The project name.
+   */
+  readonly name: string;
+
+  /**
+   * The readable path, e.g. ~ instead of /home/…
+   */
+  readonly path: string;
+
+  /**
+   * The absolute path to the project.
+   */
+  readonly abspath: string;
+}
+
 interface HelperSuccessResult {
   readonly kind: "success";
   /**
    * Discovered projects
    */
-  readonly projects: [
-    [
-      string,
-      [
-        // Note: Do not use the Project type, lest we change it accidentally and
-        // thus break deserialization.
-        {
-          /**
-           * The project identifier.
-           */
-          readonly id: string;
-
-          /**
-           * The project name.
-           */
-          readonly name: string;
-
-          /**
-           * The readable path, e.g. ~ instead of /home/…
-           */
-          readonly path: string;
-
-          /**
-           * The absolute path to the project.
-           */
-          readonly abspath: string;
-        }
-      ]
-    ]
-  ];
+  readonly projects: ReadonlyArray<[string, ReadonlyArray<ProjectFromHelper>]>;
 }
 
 interface HelperErrorResult {
