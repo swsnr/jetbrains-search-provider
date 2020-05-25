@@ -18,17 +18,15 @@ Supports:
 
 ## Installation
 
-Install via [Gnome Extensions][gexts].
-
-Alternatively download the latest `.shell-extension.zip` from [Releases] and run
+Visit [Releases] and download `jetbrains-search-provider@swsnr.de.shell-extension.zip`
+from the latest release, then run:
 
 ```console
 $ gnome-extensions install jetbrains-search-provider@swsnr.de.shell-extension.zip
 ```
 
-**Note:** Version numbers from Gnome Extensions and Releases differ, because
-uploading to Gnome Extensions renumbers releases. If you switch between
-installation methods, remove and reinstall.
+Alternatively you can install directly from [Gnome Extensions][gexts] but the
+mandatory review process sometimes delays new releases for a couple of days.
 
 [gexts]: https://extensions.gnome.org/extension/3115/jetbrains-search-provider/
 [releases]: https://github.com/lunaryorn/jetbrains-search-provider/releases
