@@ -14,8 +14,6 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-/* eslint-disable @typescript-eslint/camelcase */
-
 declare namespace imports {
   namespace gi {
     namespace Gio {
@@ -41,7 +39,7 @@ declare namespace imports {
         get_path(): string | null;
       }
 
-      class Cancellable {}
+      class Cancellable { }
 
       type SubprocessFlags = number;
 
