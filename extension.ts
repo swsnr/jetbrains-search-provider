@@ -486,6 +486,7 @@ function init(): ExtensionState {
                 provider
               );
             });
+            registeredProviders = providers;
           })
           .catch((error) => {
             // If the the user hasn't disabled the extension meanwhile show an
