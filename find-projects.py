@@ -34,6 +34,7 @@ PRODUCTS = [
     ProductInfo(key='idea-ce', config_glob='IdeaIC*'),
     ProductInfo(key='webstorm', config_glob='WebStorm*'),
     ProductInfo(key='clion', config_glob='CLion*'),
+    ProductInfo(key='goland', config_glob='GoLand*'),
 ]
 
 
