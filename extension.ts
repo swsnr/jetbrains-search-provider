@@ -115,6 +115,13 @@ const PRODUCTS: Map<string, ProductInfo> = new Map<string, ProductInfo>(
         "jetbrains-clion.desktop",
       ],
     },
+    {
+        key: "goland",
+        desktopNames: [
+            // Toolbox installation
+            "jetbrains-goland.desktop",
+        ],
+    },
   ].map((product) => [product.key, product])
 );
 

@@ -10,6 +10,7 @@ Supports:
 - IDEA Community Edition
 - Webstorm
 - CLion
+- GoLand
 
 ## Requirements
 
