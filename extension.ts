@@ -116,11 +116,11 @@ const PRODUCTS: Map<string, ProductInfo> = new Map<string, ProductInfo>(
       ],
     },
     {
-        key: "goland",
-        desktopNames: [
-            // Toolbox installation
-            "jetbrains-goland.desktop",
-        ],
+      key: "goland",
+      desktopNames: [
+        // Toolbox installation
+        "jetbrains-goland.desktop",
+      ],
     },
   ].map((product) => [product.key, product])
 );
