@@ -4,6 +4,8 @@ A Gnome shell extension to add recent projects from JetBrains IDEs to search.
 
 **Note:** This extension is not affiliated with or endorsed by JetBrains.
 
+![Screenshot](./screenshot.png)
+
 Supports:
 
 - IDEA Ultimate (Toolbox, Snap, Flatpack)
