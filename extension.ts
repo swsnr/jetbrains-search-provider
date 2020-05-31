@@ -97,6 +97,8 @@ const PRODUCTS: Map<string, ProductInfo> = new Map<string, ProductInfo>(
       desktopNames: [
         // Toolbox installation
         "jetbrains-idea-ce.desktop",
+        // Snap install
+        "intellij-idea-community_intellij-idea-community.desktop",
         // Arch Linux package,
         "idea.desktop",
       ],
