@@ -6,11 +6,11 @@ A Gnome shell extension to add recent projects from JetBrains IDEs to search.
 
 Supports:
 
-- IDEA Ultimate
-- IDEA Community Edition
-- Webstorm
-- CLion
-- GoLand
+- IDEA Ultimate (Toolbox, Snap, Flatpack)
+- IDEA Community Edition (Toolbox, Arch Linux Package)
+- Webstorm (Toolbox)
+- CLion (Toolbox)
+- GoLand (Toolbox)
 
 ## Requirements
 
