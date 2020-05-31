@@ -1,6 +1,6 @@
 {
   "name": "jetbrains-search-provider",
-  "version": "3",
+  "version": "4",
   "description": "Search recent projects of JetBrains IDEs in Gnome shell",
   "repository": "https://github.com/lunaryorn/jetbrains-search-provider.git",
   "author": "Sebastian Wiesner <sebastian@swsnr.de>",
