@@ -108,6 +108,8 @@ const PRODUCTS: Map<string, ProductInfo> = new Map<string, ProductInfo>(
       desktopNames: [
         // Toolbox installation
         "jetbrains-webstorm.desktop",
+        // Snap installation
+        "webstorm_webstorm.desktop"
       ],
     },
     {
@@ -115,6 +117,8 @@ const PRODUCTS: Map<string, ProductInfo> = new Map<string, ProductInfo>(
       desktopNames: [
         // Toolbox installation
         "jetbrains-clion.desktop",
+        // Snap installation
+        "clion_clion.desktop"
       ],
     },
     {

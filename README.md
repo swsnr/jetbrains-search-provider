@@ -10,8 +10,8 @@ Supports:
 
 - IDEA Ultimate (Toolbox, Snap, Flatpack)
 - IDEA Community Edition (Toolbox, Snap, Arch Linux Package)
-- Webstorm (Toolbox)
-- CLion (Toolbox)
+- Webstorm (Toolbox, Snap)
+- CLion (Toolbox, Snap)
 - GoLand (Toolbox)
 
 ## Requirements
