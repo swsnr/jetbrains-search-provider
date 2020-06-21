@@ -13,6 +13,7 @@ Supports:
 - Webstorm (Toolbox, Snap)
 - CLion (Toolbox, Snap)
 - GoLand (Toolbox)
+- PyCharm (Toolbox)
 
 ## Requirements
 
