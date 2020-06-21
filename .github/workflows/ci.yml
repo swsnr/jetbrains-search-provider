@@ -15,5 +15,5 @@ jobs:
       - name: Install gnome-extensions
         run: |
           sudo apt-get -q update
-          sudo apt-get -y install gnome-shell
+          sudo apt-get -qq -y install gnome-shell
       - run: yarn package
