@@ -14,6 +14,7 @@ Supports:
 - CLion (Toolbox, Snap)
 - GoLand (Toolbox)
 - PyCharm (Toolbox)
+- PhpStorm (Toolbox)
 
 ## Requirements
 

@@ -135,6 +135,13 @@ const PRODUCTS: Map<string, ProductInfo> = new Map<string, ProductInfo>(
         "jetbrains-pycharm.desktop",
       ],
     },
+    {
+      key: "phpstorm",
+      desktopNames: [
+        // Toolbox installation
+        "jetbrains-phpstorm.desktop",
+      ],
+    },
   ].map((product) => [product.key, product])
 );
 
