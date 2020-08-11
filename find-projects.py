@@ -36,6 +36,7 @@ PRODUCTS = [
     ProductInfo(key='clion', config_glob='CLion*'),
     ProductInfo(key='goland', config_glob='GoLand*'),
     ProductInfo(key='pycharm', config_glob='PyCharm*'),
+    ProductInfo(key='phpstorm', config_glob='PhpStorm*'),
 ]
 
 
