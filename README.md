@@ -15,6 +15,7 @@ Supports:
 - GoLand (Toolbox)
 - PyCharm (Toolbox)
 - PhpStorm (Toolbox)
+- Rider (Toolbox)
 
 ## Requirements
 
