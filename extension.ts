@@ -140,6 +140,8 @@ const PRODUCTS: Map<string, ProductInfo> = new Map<string, ProductInfo>(
       desktopNames: [
         // Toolbox installation
         "jetbrains-phpstorm.desktop",
+        // Snap installation
+        "phpstorm_phpstorm.desktop",
       ],
     },
     {
