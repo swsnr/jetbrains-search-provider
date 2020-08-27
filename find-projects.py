@@ -26,18 +26,18 @@ from pathlib import Path
 from traceback import format_exc
 
 
-ProductInfo = namedtuple('ProductInfo', 'key config_glob recents_file')
+ProductInfo = namedtuple('ProductInfo', 'key config_glob')
 
 
 PRODUCTS = [
-    ProductInfo(key='idea', config_glob='IntelliJIdea*', recents_file='recentProjects.xml'),
-    ProductInfo(key='idea-ce', config_glob='IdeaIC*', recents_file='recentProjects.xml'),
-    ProductInfo(key='webstorm', config_glob='WebStorm*', recents_file='recentProjects.xml'),
-    ProductInfo(key='clion', config_glob='CLion*', recents_file='recentProjects.xml'),
-    ProductInfo(key='goland', config_glob='GoLand*', recents_file='recentProjects.xml'),
-    ProductInfo(key='pycharm', config_glob='PyCharm*', recents_file='recentProjects.xml'),
-    ProductInfo(key='phpstorm', config_glob='PhpStorm*', recents_file='recentProjects.xml'),
-    ProductInfo(key='rider', config_glob='Rider*', recents_file='recentSolutions.xml'),
+    ProductInfo(key='idea', config_glob='IntelliJIdea*'),
+    ProductInfo(key='idea-ce', config_glob='IdeaIC*'),
+    ProductInfo(key='webstorm', config_glob='WebStorm*'),
+    ProductInfo(key='clion', config_glob='CLion*'),
+    ProductInfo(key='goland', config_glob='GoLand*'),
+    ProductInfo(key='pycharm', config_glob='PyCharm*'),
+    ProductInfo(key='phpstorm', config_glob='PhpStorm*'),
+    ProductInfo(key='rider', config_glob='Rider*'),
 ]
 
 
@@ -69,7 +69,10 @@ def find_latest_recent_projects_file(product: ProductInfo):
     config_dir = max(find_config_directories(product),
                      key=product_version, default=None)
     if config_dir:
-        return config_dir / 'options' / product.recents_file
+    	if product.key == 'rider':
+        	return config_dir / 'options' / 'recentSolutions.xml'
+    	else:
+	    	return config_dir / 'options' / 'recentProjects.xml'
     else:
         return None
 
@@ -81,10 +84,8 @@ def get_project(product, path):
     Figure out the project name, and return a dictionary with the project name,
     the readable project path, the absolute project path, and a unique ID.
     """
-    if path.expanduser().is_file():
-        namefile = path.parent.expanduser() / '.idea' / '.name'
-    else:
-        namefile = path.expanduser() / '.idea' / '.name'
+    project_dir = path.parent if path.expanduser().is_file() else path
+    namefile = project_dir / '.idea' / '.name'
     try:
         name = namefile.read_text(encoding='utf-8').strip()
     except FileNotFoundError:
@@ -110,7 +111,8 @@ def find_recent_projects(product, recent_projects_file):
              for el in
              document.findall('.//option[@name="recentPaths"]/list/option'))
     for path in paths:
-        yield get_project(product, path)
+    	if Path.exists(path.expanduser()):
+        	yield get_project(product, path)
 
 
 def success(projects):
@@ -131,7 +133,7 @@ def error(message, traceback):
 def find_all_recent_projects():
     for product in PRODUCTS:
         config_file = find_latest_recent_projects_file(product)
-        if config_file and os.path.exists(config_file):
+        if config_file and Path.exists(config_file):
             yield (product.key, list(find_recent_projects(product, config_file)))
         else:
             yield (product.key, [])
