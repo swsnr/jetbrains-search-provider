@@ -70,12 +70,9 @@ def find_latest_recent_projects_file(product: ProductInfo):
                      key=product_version, default=None)
     if not config_dir:
         return None
-    config_file = config_dir / 'options' / \
-        ('recentSolutions.xml' if product.key == 'rider' else 'recentProjects.xml')
-    if Path.exists(config_file):
-        return config_file
-    else:
-        return None
+    file_name = 'recentSolutions.xml' if product.key == 'rider' else 'recentProjects.xml'
+    config_file = config_dir / 'options' / file_name
+    return config_file if config_file.exists() else None
 
 
 def get_project(product, path):
@@ -112,7 +109,7 @@ def find_recent_projects(product, recent_projects_file):
              for el in
              document.findall('.//option[@name="recentPaths"]/list/option'))
     for path in paths:
-        if Path.exists(path.expanduser()):
+        if path.expanduser().exists():
             yield get_project(product, path)
 
 
