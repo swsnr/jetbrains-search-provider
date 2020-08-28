@@ -64,37 +64,39 @@ def find_config_directories(product: ProductInfo):
 
 def find_latest_recent_projects_file(product: ProductInfo):
     """
-    Find the `recentProjects.xml` file of the most recent version of the given product.
+    Find the recent projects file of the most recent version of the given product.
     """
     config_dir = max(find_config_directories(product),
                      key=product_version, default=None)
-    if config_dir:
-        return config_dir / 'options' / 'recentProjects.xml'
-    else:
+    if not config_dir:
         return None
+    file_name = 'recentSolutions.xml' if product.key == 'rider' else 'recentProjects.xml'
+    config_file = config_dir / 'options' / file_name
+    return config_file if config_file.exists() else None
 
 
-def get_project(product, directory):
+def get_project(product, path):
     """
-    Get the project in the given directory.
+    Get the project in the given path.
 
     Figure out the project name, and return a dictionary with the project name,
     the readable project path, the absolute project path, and a unique ID.
     """
-    namefile = directory.expanduser() / '.idea' / '.name'
+    project_dir = path.parent if path.expanduser().is_file() else path
+    namefile = project_dir / '.idea' / '.name'
     try:
         name = namefile.read_text(encoding='utf-8').strip()
     except FileNotFoundError:
-        name = directory.name
+        name = path.name
     # When changing this object change the `Project` interface in extension.ts
     return {
         # Conveniently use the absolute path as ID, because it's definitely unique,
         # and prefix it with the name of this launch to avoid conflicts with IDs
         # from other providers.
-        'id': f'jetbrains-search-provider-{product.key}-{directory.expanduser()}',
+        'id': f'jetbrains-search-provider-{product.key}-{path.expanduser()}',
         'name': name,
-        'path': str(directory),
-        'abspath': str(directory.expanduser())
+        'path': str(path),
+        'abspath': str(path.expanduser())
     }
 
 
@@ -106,9 +108,9 @@ def find_recent_projects(product, recent_projects_file):
     paths = (Path(el.attrib['value'].replace('$USER_HOME$', '~'))
              for el in
              document.findall('.//option[@name="recentPaths"]/list/option'))
-    for directory in paths:
-        if directory.expanduser().is_dir():
-            yield get_project(product, directory)
+    for path in paths:
+        if path.expanduser().exists():
+            yield get_project(product, path)
 
 
 def success(projects):
