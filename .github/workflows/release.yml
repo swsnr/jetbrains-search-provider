@@ -16,7 +16,7 @@ jobs:
       - name: apt-get install gnome-shell
         run: |
           sudo apt-get -q update
-          sudo apt-get -qq -y install gnome-shell
+          sudo apt-get -qq -y --no-install-recommends install gnome-shell
       - run: yarn package
       - uses: softprops/action-gh-release@v1
         with:
