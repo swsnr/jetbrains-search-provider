@@ -2,7 +2,7 @@
   "uuid": "jetbrains-search-provider@swsnr.de",
   "name": "JetBrains Search Provider",
   "description": "Search recent projects of JetBrains IDEs in Gnome shell",
-  "version": 9,
+  "version": 10,
   "shell-version": ["3.36"],
   "url": "https://github.com/lunaryorn/jetbrains-search-provider"
 }
