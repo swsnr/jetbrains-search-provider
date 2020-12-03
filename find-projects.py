@@ -105,9 +105,13 @@ def find_recent_projects(product, recent_projects_file):
     Find all recent projects listed in the given recent projects XML file.
     """
     document = etree.parse(recent_projects_file)
-    paths = (Path(el.attrib['value'].replace('$USER_HOME$', '~'))
-             for el in
-             document.findall('.//option[@name="recentPaths"]/list/option'))
+    paths = set(Path(el.attrib['value'].replace('$USER_HOME$', '~'))
+                for el in
+                document.findall('.//option[@name="recentPaths"]/list/option'))
+    # Paths structure since IDEA 2020.3
+    paths.update(Path(el.attrib['key'].replace('$USER_HOME$', '~'))
+                 for el in
+                 document.findall('.//component[@name="RecentProjectsManager"]/option[@name="additionalInfo"]/map/entry'))
     for path in paths:
         if path.expanduser().exists():
             yield get_project(product, path)
