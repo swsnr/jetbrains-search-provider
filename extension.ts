@@ -229,7 +229,7 @@ const projectMatchesAllTerms = (
   terms: ReadonlyArray<string>
 ): boolean =>
   terms.every(
-    (term) => project.name.includes(term) || project.path.includes(term)
+      (term) => project.name.toLowerCase().includes(term.toLowerCase()) || project.path.toLowerCase().includes(term.toLowerCase())
   );
 
 /**
