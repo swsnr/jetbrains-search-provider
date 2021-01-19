@@ -133,6 +133,8 @@ const PRODUCTS: Map<string, ProductInfo> = new Map<string, ProductInfo>(
       desktopNames: [
         // Toolbox installation
         "jetbrains-pycharm.desktop",
+        // Arch Linux User Repository
+        "pycharm-professional.desktop",
       ],
     },
     {
