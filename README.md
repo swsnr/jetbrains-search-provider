@@ -8,14 +8,14 @@ A Gnome shell extension to add recent projects from JetBrains IDEs to search.
 
 Supports:
 
-- IDEA Ultimate (Toolbox, Snap, Flatpack)
-- IDEA Community Edition (Toolbox, Snap, Arch Linux Package)
-- Webstorm (Toolbox, Snap)
 - CLion (Toolbox, Snap)
 - GoLand (Toolbox)
-- PyCharm (Toolbox)
+- IDEA Community Edition (Toolbox, Snap, Arch Linux Package)
+- IDEA Ultimate (Toolbox, Snap, Flatpack)
 - PhpStorm (Toolbox, Snap)
+- PyCharm (Toolbox)
 - Rider (Toolbox)
+- Webstorm (Toolbox, Snap)
 
 ## Requirements
 
