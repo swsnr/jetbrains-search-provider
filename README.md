@@ -8,6 +8,7 @@ A Gnome shell extension to add recent projects from JetBrains IDEs to search.
 
 Supports:
 
+- Android Studio (Toolbox)
 - CLion (Toolbox, Snap)
 - GoLand (Toolbox)
 - IDEA Community Edition (Toolbox, Snap, Arch Linux Package)

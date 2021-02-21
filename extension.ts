@@ -153,6 +153,13 @@ const PRODUCTS: Map<string, ProductInfo> = new Map<string, ProductInfo>(
         "jetbrains-rider.desktop",
       ],
     },
+    {
+      key: "android-studio",
+      desktopNames: [
+        // Toolbox installation
+        "jetbrains-studio.desktop",
+      ],
+    },
   ].map((product) => [product.key, product])
 );
 

@@ -26,26 +26,27 @@ from pathlib import Path
 from traceback import format_exc
 
 
-ProductInfo = namedtuple('ProductInfo', 'key config_glob')
+ProductInfo = namedtuple('ProductInfo', 'key config_glob base_dir')
 
 
 PRODUCTS = [
-    ProductInfo(key='idea', config_glob='IntelliJIdea*'),
-    ProductInfo(key='idea-ce', config_glob='IdeaIC*'),
-    ProductInfo(key='webstorm', config_glob='WebStorm*'),
-    ProductInfo(key='clion', config_glob='CLion*'),
-    ProductInfo(key='goland', config_glob='GoLand*'),
-    ProductInfo(key='pycharm', config_glob='PyCharm*'),
-    ProductInfo(key='phpstorm', config_glob='PhpStorm*'),
-    ProductInfo(key='rider', config_glob='Rider*'),
+    ProductInfo(key='idea', config_glob='IntelliJIdea*', base_dir="JetBrains"),
+    ProductInfo(key='idea-ce', config_glob='IdeaIC*', base_dir="JetBrains"),
+    ProductInfo(key='webstorm', config_glob='WebStorm*', base_dir="JetBrains"),
+    ProductInfo(key='clion', config_glob='CLion*', base_dir="JetBrains"),
+    ProductInfo(key='goland', config_glob='GoLand*', base_dir="JetBrains"),
+    ProductInfo(key='pycharm', config_glob='PyCharm*', base_dir="JetBrains"),
+    ProductInfo(key='phpstorm', config_glob='PhpStorm*', base_dir="JetBrains"),
+    ProductInfo(key='rider', config_glob='Rider*', base_dir="JetBrains"),
+    ProductInfo(key='android-studio', config_glob='AndroidStudio*', base_dir="Google"),
 ]
 
 
 def product_version(config_dir):
-    version = re.search(r'\d{4}\.\d{1,2}', config_dir.name)
+    version = re.search(r'\d{1,4}\.\d{1,2}', config_dir.name)
     if version:
-        year, revision = version.group(0).split('.')
-        return (int(year), int(revision))
+        epoch, major = version.group(0).split('.')
+        return (int(epoch), int(major))
     else:
         raise ValueError(f'Not a valid IDEA config directory: {config_dir}')
 
@@ -59,7 +60,7 @@ def find_config_directories(product: ProductInfo):
         config_home = Path(config_home)
     else:
         config_home = Path.home() / '.config'
-    yield from (config_home / 'JetBrains').glob(product.config_glob)
+    yield from (config_home / product.base_dir).glob(product.config_glob)
 
 
 def find_latest_recent_projects_file(product: ProductInfo):
