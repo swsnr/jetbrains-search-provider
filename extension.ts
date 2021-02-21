@@ -19,6 +19,7 @@ import St = imports.gi.St;
 
 import Main = imports.ui.main;
 import ExtensionUtils = imports.misc.extensionUtils;
+import AppInfo = imports.gi.Gio.AppInfo;
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const Self = ExtensionUtils.getCurrentExtension()!;
 
@@ -228,10 +229,11 @@ const lookupProjects = (
  */
 const projectMatchesAllTerms = (
   project: Project,
-  terms: ReadonlyArray<string>
+  terms: ReadonlyArray<string>,
+  app: Gio.DesktopAppInfo
 ): boolean =>
   terms.every(
-      (term) => project.name.toLowerCase().includes(term.toLowerCase()) || project.path.toLowerCase().includes(term.toLowerCase())
+      (term) => project.name.toLowerCase().includes(term.toLowerCase()) || project.path.toLowerCase().includes(term.toLowerCase()) || app.get_name().toLowerCase().includes(term)
   );
 
 /**
@@ -243,9 +245,10 @@ const projectMatchesAllTerms = (
  */
 const findMatchingIds = (
   projects: ReadonlyArray<Project>,
-  terms: ReadonlyArray<string>
+  terms: ReadonlyArray<string>,
+  app: Gio.DesktopAppInfo
 ): string[] =>
-  projects.filter((p) => projectMatchesAllTerms(p, terms)).map((p) => p.id);
+  projects.filter((p) => projectMatchesAllTerms(p, terms, app)).map((p) => p.id);
 
 /**
  * Launch IDEA or show an error notification on failure.
@@ -314,9 +317,9 @@ const createProvider = (
   canLaunchSearch: true,
   appInfo: app,
   getInitialResultSet: (terms, callback): void =>
-    callback(findMatchingIds([...projects.values()], terms)),
+    callback(findMatchingIds([...projects.values()], terms, app)),
   getSubsearchResultSet: (current, terms, callback): void =>
-    callback(findMatchingIds(lookupProjects(projects, current), terms)),
+    callback(findMatchingIds(lookupProjects(projects, current), terms, app)),
   getResultMetas: (ids, callback): void =>
     callback(lookupProjects(projects, ids).map(resultMetaForProject(app))),
   launchSearch: (): void => launchAppInShell(app),
