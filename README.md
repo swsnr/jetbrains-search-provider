@@ -1,5 +1,7 @@
 # Jetbrains search provider
 
+**Deprecated:** This extension is no longer maintained; please see <https://github.com/lunaryorn/gnome-search-providers-jetbrains> for a proper search provider which avoids the fragile Gnome Extensions API (which never supported search providers officially) and instead implements the standard DBus API.
+
 A Gnome shell extension to add recent projects from JetBrains IDEs to search.
 
 **Note:** This extension is not affiliated with or endorsed by JetBrains.
